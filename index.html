@@ -121,6 +121,58 @@ button{ font-family:inherit; }
 a, button, .clickable{ cursor:pointer; }
 :focus-visible{ outline:3px solid var(--banana); outline-offset:2px; border-radius:8px; }
 
+/* ============================= ACCESS GATE ============================= */
+.lock-screen{
+  position:fixed; inset:0; z-index:1000;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  background:var(--bg);
+  transition:opacity .4s ease;
+}
+.lock-screen::before{
+  content:'';
+  position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(255,210,63,.09), transparent 60%),
+    radial-gradient(1100px 650px at 100% 0%, rgba(168,85,247,.13), transparent 55%),
+    radial-gradient(900px 500px at 30% 100%, rgba(109,40,217,.09), transparent 60%);
+}
+.lock-screen.unlocked{ opacity:0; pointer-events:none; }
+.lock-card{
+  background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-lg);
+  width:100%; max-width:360px; padding:40px 32px; text-align:center;
+  box-shadow:var(--shadow-lg); animation:popIn .4s cubic-bezier(.3,1.4,.5,1);
+}
+.lock-card.shake-lock{ animation:screenShake .4s ease-in-out; }
+.lock-emoji{ font-size:40px; margin-bottom:14px; filter:drop-shadow(0 4px 10px rgba(0,0,0,.3)); }
+.lock-title{
+  font-family:var(--font-display); font-weight:800; font-size:22px; margin:0 0 8px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.lock-title .peel{ font-size:22px; transform:rotate(-6deg); display:inline-block; }
+.lock-sub{ color:var(--text-muted); font-size:14px; margin:0 0 22px; font-weight:500; }
+.lock-input{
+  width:100%; border:1px solid var(--border); background:var(--surface); color:var(--text);
+  font-family:var(--font-body); font-size:15px; font-weight:600; text-align:center;
+  padding:14px 16px; border-radius:14px; outline:none; letter-spacing:.3px;
+  transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.lock-input::placeholder{ color:var(--text-muted); font-weight:500; }
+.lock-input:focus{ border-color:var(--violet); box-shadow:0 0 0 3px rgba(168,85,247,.16); background:var(--surface-2); }
+.lock-btn{
+  width:100%; margin-top:14px; border:none; border-radius:14px; padding:14px;
+  font-family:var(--font-display); font-weight:700; font-size:15px; color:#241a00;
+  background:linear-gradient(120deg, var(--banana), var(--banana-deep));
+  box-shadow:0 10px 24px rgba(255,168,61,.3);
+  transition:transform .18s cubic-bezier(.3,1.5,.6,1), box-shadow .22s ease;
+}
+.lock-btn:hover{ transform:translateY(-2px) scale(1.01); box-shadow:0 14px 30px rgba(255,168,61,.4); }
+.lock-btn:active{ transform:translateY(0) scale(.97); }
+.lock-error{
+  margin-top:14px; font-size:13px; font-weight:700; color:var(--pink);
+  min-height:16px; opacity:0; transition:opacity .2s ease;
+}
+.lock-error.show{ opacity:1; }
+
 /* ============================= LAYOUT ============================= */
 .app-header{
   position:sticky; top:0; z-index:40;
@@ -637,6 +689,18 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 </head>
 <body>
 
+<!-- Access gate: shown on every visit, blocks everything until the code is entered -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card" id="lockCard">
+    <div class="lock-emoji">🔒</div>
+    <h1 class="lock-title"><span class="peel">👃</span>Snotty<span style="opacity:.6">BananaPacks</span></h1>
+    <p class="lock-sub">Enter the access code to continue</p>
+    <input type="password" id="lockInput" class="lock-input" placeholder="Access code" autocomplete="off" spellcheck="false" autocapitalize="off">
+    <button class="lock-btn" id="lockBtn">Unlock</button>
+    <div class="lock-error" id="lockError"></div>
+  </div>
+</div>
+
 <header class="app-header">
   <div class="brand"><span class="peel">👃</span><b>Snotty</b><span class="label">BananaPacks</span></div>
   <nav class="tabs" id="tabs">
@@ -755,6 +819,38 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 <script>
 (function(){
 "use strict";
+
+/* ======================= ACCESS GATE ======================= */
+/* No code is remembered between visits — the code must be re-entered every time. */
+(function(){
+  const ACCESS_CODE = "WrenIsBetterThanOrinAtEverything123";
+  const lockScreen = document.getElementById("lockScreen");
+  const lockInput  = document.getElementById("lockInput");
+  const lockBtn    = document.getElementById("lockBtn");
+  const lockError  = document.getElementById("lockError");
+  const lockCard   = document.getElementById("lockCard");
+
+  function tryUnlock(){
+    if(lockInput.value === ACCESS_CODE){
+      lockScreen.classList.add("unlocked");
+      setTimeout(()=>{ lockScreen.style.display = "none"; }, 400);
+    } else {
+      lockError.textContent = "Wrong code — try again.";
+      lockError.classList.add("show");
+      lockCard.classList.remove("shake-lock");
+      void lockCard.offsetWidth; // restart the shake animation
+      lockCard.classList.add("shake-lock");
+      lockInput.value = "";
+      lockInput.focus();
+    }
+  }
+
+  lockBtn.addEventListener("click", tryUnlock);
+  lockInput.addEventListener("keydown", (e)=>{
+    if(e.key === "Enter") tryUnlock();
+  });
+  lockInput.focus();
+})();
 
 /* ======================= DATA (expand here later) ======================= */
 
