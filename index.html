@@ -779,9 +779,9 @@ const PACKS = [
 // a new character, always give it the NEXT number after the current highest
 // (e.g. the 4th character ever added gets num:4, the 5th gets num:5, etc).
 const CHARACTERS = [
-  { id:"orin",         name:"Orin",         rarity:"common",   packId:"orin-pack", image:"images/Orin.jpg",        num:1 },
-  { id:"farmer-orin",  name:"Farmer Orin",  rarity:"common",   packId:"orin-pack", image:"images/FarmerOrin.jpg",  num:2 },
-  { id:"chubby-orin",  name:"Chubby Orin",  rarity:"uncommon", packId:"orin-pack", image:"images/ChubbyOrin.jpg", num:3 },
+  { id:"orin",         name:"Orin",         rarity:"common",   packId:"orin-pack", image:"Orin.jpg",        num:1 },
+  { id:"farmer-orin",  name:"Farmer Orin",  rarity:"common",   packId:"orin-pack", image:"FarmerOrin.jpg",  num:2 },
+  { id:"chubby-orin",  name:"Chubby Orin",  rarity:"uncommon", packId:"orin-pack", image:"ChubbyOrin.jpg", num:3 },
 ];
 
 const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
@@ -999,15 +999,39 @@ function tileDelay(i){
   return ` style="--tile-delay:${Math.min(i,16)*28}ms"`;
 }
 // Wires an <img>/.fallback pair: on load error, shows the fallback.
+// Flip to true temporarily to print the exact broken image path onto each
+// tile itself instead of the initials, so it's visible without opening
+// dev tools. Set back to false once images are fixed.
+const DEBUG_SHOW_IMAGE_PATH = false;
+
 function wireVisual(container, character){
   const img = container.querySelector("img");
   const fb  = container.querySelector(".fallback");
   container.classList.remove("show-fallback");
   fb.textContent = initials(character.name);
   fb.style.background = `linear-gradient(155deg, ${RARITIES[character.rarity].color}, ${RARITIES[character.rarity].color2})`;
-  img.onerror = ()=>{ container.classList.add("show-fallback"); };
+  img.onerror = ()=>{
+    container.classList.add("show-fallback");
+    console.error("[SnottyBananaPacks] Image failed to load for \"" + character.name + "\". Tried this exact URL:", character.image);
+    if(DEBUG_SHOW_IMAGE_PATH){
+      fb.textContent = character.image;
+      fb.title = "Failed to load: " + character.image;
+      fb.style.fontSize = "10px";
+      fb.style.fontFamily = "monospace";
+      fb.style.fontWeight = "600";
+      fb.style.wordBreak = "break-all";
+      fb.style.padding = "6px";
+      fb.style.lineHeight = "1.3";
+      fb.style.textAlign = "center";
+    }
+  };
+  img.onload = ()=>{
+    // loaded fine — make sure we're not stuck showing the fallback from a previous attempt
+    container.classList.remove("show-fallback");
+  };
   img.src = character.image;
   img.alt = character.name;
+  img.title = character.image;
 }
 
 function formatBadgeCount(n){ return n>99 ? "99+" : String(n); }
