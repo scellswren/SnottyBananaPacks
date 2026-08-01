@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnottyBananaPacks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================= TOKENS ============================= */
+:root{
+  --bg:#100e1a;
+  --bg-2:#17142400;
+  --bg-elevated:#1c1830;
+  --surface:#251f3d;
+  --surface-2:#2d2650;
+  --text:#f4f1fc;
+  --text-muted:#a79fc4;
+  --border:rgba(255,255,255,.09);
+  --border-strong:rgba(255,255,255,.16);
+  --shadow-lg:0 24px 70px rgba(0,0,0,.55);
+  --shadow-md:0 10px 30px rgba(0,0,0,.4);
+  --radius-lg:26px;
+  --radius-md:18px;
+  --radius-sm:12px;
+
+  --banana:#FFD23F;
+  --banana-deep:#F5A623;
+  --slime:#7ED957;
+  --slime-deep:#3FAE3A;
+  --pink:#FF4FA3;
+  --sky:#3ACBFF;
+  --violet:#A855F7;
+  --violet-deep:#6D28D9;
+
+  --c-common:#AEB4C4;
+  --c-common-2:#7C8296;
+  --c-uncommon:#3FE08A;
+  --c-uncommon-2:#1CA35F;
+  --c-rare:#3ABCFF;
+  --c-rare-2:#1B7FE0;
+  --c-epic:#B983FF;
+  --c-epic-2:#7A3FE0;
+  --c-legendary:#FFC93C;
+  --c-legendary-2:#FF7A2E;
+  --c-mythic:#FF6EC7;
+  --c-mythic-2:#5AE2FF;
+  --c-bumhole:#C98A4B;
+  --c-bumhole-2:#7A4E23;
+
+  --font-display:'Baloo 2', system-ui, sans-serif;
+  --font-body:'Inter', system-ui, sans-serif;
+}
+
+[data-theme="light"]{
+  --bg:#f6f4fb;
+  --bg-elevated:#ffffff;
+  --surface:#ffffff;
+  --surface-2:#f1eefb;
+  --text:#241f38;
+  --text-muted:#6e6688;
+  --border:rgba(43,26,82,.10);
+  --border-strong:rgba(43,26,82,.20);
+  --shadow-lg:0 24px 60px rgba(76,41,166,.14);
+  --shadow-md:0 10px 26px rgba(76,41,166,.10);
+}
+[data-theme="light"] .char-tile,
+[data-theme="light"] .pill-btn,
+[data-theme="light"] .pack-chip,
+[data-theme="light"] .icon-btn,
+[data-theme="light"] .odds-card,
+[data-theme="light"] .tabs{
+  box-shadow:0 1px 3px rgba(43,26,82,.06);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html,body{ height:100%; }
+html{ scrollbar-width:thin; scrollbar-color:var(--violet) transparent; }
+::-webkit-scrollbar{ width:12px; height:12px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{
+  background-color:var(--violet-deep);
+  background-image:linear-gradient(180deg, var(--violet), var(--violet-deep));
+  border-radius:999px;
+  border:3px solid var(--bg);
+  background-clip:padding-box;
+}
+::-webkit-scrollbar-thumb:hover{
+  background-image:linear-gradient(180deg, var(--violet-deep), #4c1d95);
+  background-clip:padding-box;
+}
+::-webkit-scrollbar-corner{ background:transparent; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  min-height:100vh;
+  transition:background .4s ease, color .4s ease;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:'';
+  position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(255,210,63,.09), transparent 60%),
+    radial-gradient(1100px 650px at 100% 0%, rgba(168,85,247,.13), transparent 55%),
+    radial-gradient(900px 500px at 30% 100%, rgba(109,40,217,.09), transparent 60%),
+    radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0) 0 0/28px 28px;
+  transition:background .4s ease;
+}
+img{ -webkit-user-drag:none; user-select:none; }
+button{ font-family:inherit; }
+::selection{ background:var(--banana); color:#221a00; }
+
+a, button, .clickable{ cursor:pointer; }
+:focus-visible{ outline:3px solid var(--banana); outline-offset:2px; border-radius:8px; }
+
+/* ============================= LAYOUT ============================= */
+.app-header{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:16px;
+  padding:14px 24px;
+  background:color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+  backdrop-filter:blur(14px) saturate(140%);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 1px 0 rgba(255,255,255,.02), 0 12px 30px -20px rgba(0,0,0,.5);
+}
+.brand{
+  display:flex; align-items:center; gap:9px;
+  font-family:var(--font-display); font-weight:800;
+  font-size:23px; letter-spacing:.2px;
+  color:var(--text);
+  white-space:nowrap;
+}
+.brand .peel{ font-size:25px; filter:drop-shadow(0 2px 6px rgba(255,210,63,.35)); transform:rotate(-6deg); display:inline-block; }
+.brand b{ background:linear-gradient(100deg, var(--violet), var(--violet-deep) 80%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+.tabs{
+  display:flex; gap:4px;
+  background:var(--surface);
+  padding:5px;
+  border-radius:999px;
+  border:1px solid var(--border);
+}
+.tab-btn{
+  border:none; background:transparent; color:var(--text-muted);
+  font-weight:700; font-size:14.5px; padding:9px 18px; border-radius:999px;
+  position:relative;
+  transition:color .25s ease, background .25s ease, transform .15s ease;
+  display:flex; align-items:center; gap:8px;
+}
+.tab-btn:hover{ color:var(--text); }
+.tab-btn.active{
+  background:linear-gradient(120deg, var(--banana), var(--banana-deep)); color:#241a00;
+  box-shadow:0 6px 16px rgba(255,210,63,.35);
+  animation:tabPop .4s cubic-bezier(.3,1.6,.5,1);
+}
+@keyframes tabPop{ 0%{ transform:scale(.9); } 55%{ transform:scale(1.06); } 100%{ transform:scale(1); } }
+.tab-btn:active{ transform:scale(.96); }
+
+.badge{
+  position:absolute; top:-6px; right:-8px;
+  background:linear-gradient(140deg, var(--pink), #ff2f7c);
+  color:#fff; font-size:10.5px; font-weight:800;
+  min-width:18px; height:18px; padding:0 4px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:999px; border:2px solid var(--bg-elevated);
+  box-shadow:0 4px 10px rgba(255,50,120,.5);
+  animation:badgePop .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes badgePop{ from{ transform:scale(0); } to{ transform:scale(1); } }
+
+.header-actions{ display:flex; align-items:center; gap:10px; }
+.icon-btn{
+  width:42px; height:42px; border-radius:14px;
+  border:1px solid var(--border); background:var(--surface); color:var(--text);
+  display:flex; align-items:center; justify-content:center; font-size:19px;
+  transition:transform .2s ease, background .2s ease, border-color .2s ease;
+}
+.icon-btn:hover{ background:var(--surface-2); transform:translateY(-2px); }
+.icon-btn:active{ transform:translateY(0) scale(.94); }
+
+main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
+.view{ display:none; animation:viewIn .5s cubic-bezier(.2,.9,.25,1); }
+.view.active{ display:block; }
+@keyframes viewIn{ from{ opacity:0; transform:translateY(14px) scale(.99); } to{ opacity:1; transform:translateY(0) scale(1); } }
+
+.section-head{ margin-bottom:26px; display:flex; align-items:center; gap:14px; }
+.section-head::before{
+  content:''; width:7px; height:30px; border-radius:6px; flex:none;
+  background:linear-gradient(180deg, var(--violet), var(--violet-deep));
+}
+.section-head h1{ font-family:var(--font-display); font-size:28px; margin:0; letter-spacing:.2px; }
+
+/* ============================= HOME / PACK ============================= */
+.home-stage{
+  display:flex; flex-direction:column; align-items:center; gap:34px;
+  padding:50px 20px 30px;
+}
+.pack-picker{ display:flex; gap:26px; flex-wrap:wrap; justify-content:center; }
+@keyframes sheen{ 0%,60%{ transform:translateX(-140%); } 100%{ transform:translateX(140%); } }
+
+.pack-card{
+  width:220px; height:320px; position:relative;
+  transition:transform .45s cubic-bezier(.16,1,.3,1);
+  animation:packFloat 4.5s ease-in-out infinite;
+  transform-style:preserve-3d; perspective:800px;
+}
+.pack-card:nth-child(2n){ animation-delay:-1.5s; }
+.pack-card:nth-child(3n){ animation-delay:-3s; }
+@keyframes packFloat{
+  0%,100%{ transform:translateY(0) rotate(0deg); }
+  50%{ transform:translateY(-7px) rotate(-.6deg); }
+}
+.pack-card:hover{
+  animation-play-state:paused;
+  transform:translateY(-14px) scale(1.035) rotate(1deg);
+}
+.pack-card .layer{
+  position:absolute; inset:0; border-radius:24px;
+  background:linear-gradient(155deg, var(--pack-color, var(--c-common)), var(--pack-color2, var(--c-common-2)));
+}
+.pack-card .layer.back2{ transform:rotate(-7deg) translateY(6px); opacity:.4; box-shadow:var(--shadow-md); }
+.pack-card .layer.back1{ transform:rotate(4deg) translateY(3px); opacity:.65; box-shadow:var(--shadow-md); }
+.pack-card .layer.front{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  overflow:hidden; box-shadow:var(--shadow-lg), inset 0 2px 0 rgba(255,255,255,.35);
+}
+.pack-card .layer.front::before{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(115deg, transparent 20%, rgba(255,255,255,.5) 35%, transparent 55%);
+  transform:translateX(-140%);
+  animation:sheen 3.4s ease-in-out infinite;
+}
+.pack-card .pack-name{
+  font-family:var(--font-display); font-weight:800; font-size:21px; color:#fff;
+  text-shadow:0 2px 6px rgba(0,0,0,.25); position:relative; z-index:1;
+}
+.pack-card .pack-sub{ font-size:12px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:rgba(255,255,255,.85); margin-top:3px; position:relative; z-index:1; }
+.pack-open-btn{
+  margin-top:18px; border:none; border-radius:13px; padding:11px 26px; position:relative; z-index:1;
+  font-family:var(--font-display); font-weight:700; font-size:14.5px; color:#241a00;
+  background:linear-gradient(120deg, #ffffff, #fff2d0);
+  box-shadow:0 10px 24px rgba(0,0,0,.28);
+  transition:transform .18s cubic-bezier(.3,1.5,.6,1), box-shadow .22s ease, filter .2s ease;
+}
+.pack-open-btn:hover{ transform:translateY(-2px) scale(1.03); box-shadow:0 14px 30px rgba(0,0,0,.32); }
+.pack-open-btn:active{ transform:translateY(0) scale(.96); }
+.pack-open-btn:disabled{ opacity:.5; filter:grayscale(.3); cursor:not-allowed; transform:none; }
+.pack-info-btn{
+  position:absolute; top:14px; right:14px; z-index:2;
+  width:28px; height:28px; border-radius:50%;
+  background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.55);
+  color:#fff; font-family:var(--font-display); font-weight:800; font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .18s ease, background .2s ease;
+}
+.pack-info-btn:hover{ background:rgba(255,255,255,.42); transform:scale(1.1); }
+.pack-info-btn:active{ transform:scale(.9); }
+
+.odds-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:20px 24px; width:100%; margin-top:30px;
+  box-shadow:var(--shadow-md);
+}
+.odds-card h3{
+  margin:0 0 14px; font-family:var(--font-display); font-size:15px;
+  color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; font-weight:700;
+}
+.odds-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:4px 24px; }
+.odds-row{
+  display:flex; justify-content:space-between; align-items:center; padding:8px 4px;
+  font-size:13.5px; border-bottom:1px solid var(--border); border-radius:8px;
+  transition:background .2s ease;
+}
+.odds-row:hover{ background:var(--surface-2); }
+.odds-row .name{ display:flex; align-items:center; color:var(--text); font-weight:600; }
+.odds-row .swatch{ width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:9px; flex:none; }
+.odds-row .pct{ color:var(--text-muted); font-variant-numeric:tabular-nums; font-weight:600; }
+
+/* ============================= CARDS GRID (Inventory / Index) ============================= */
+.toolbar{ display:flex; flex-direction:column; gap:14px; margin-bottom:26px; }
+.toolbar-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between; }
+.pill-row{ display:flex; gap:10px; flex-wrap:wrap; }
+
+.dropdown{ position:relative; }
+.dropdown-trigger{
+  display:flex; align-items:center; gap:14px; justify-content:space-between;
+  min-width:190px; border:1px solid var(--border); background:var(--surface); color:var(--text);
+  font-weight:700; font-size:14px; padding:11px 16px 11px 19px; border-radius:14px;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+  transition:transform .18s cubic-bezier(.3,1.4,.6,1), border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+.dropdown-trigger:hover{ border-color:var(--border-strong); transform:translateY(-2px); background:var(--surface-2); }
+.dropdown-trigger:active{ transform:translateY(0) scale(.97); }
+.dropdown-trigger.open{ border-color:var(--violet); box-shadow:0 0 0 3px rgba(168,85,247,.16); }
+.dropdown-arrow{ font-size:11px; color:var(--text-muted); transition:transform .28s cubic-bezier(.3,1.4,.6,1); flex:none; }
+.dropdown-trigger.open .dropdown-arrow{ transform:rotate(180deg); color:var(--violet); }
+
+.dropdown-panel{
+  position:absolute; top:calc(100% + 10px); left:0; z-index:50;
+  min-width:220px; max-width:300px; max-height:300px; overflow-y:auto;
+  background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:16px;
+  box-shadow:var(--shadow-lg); padding:8px;
+  opacity:0; transform:translateY(-10px) scale(.97); transform-origin:top left;
+  pointer-events:none;
+  transition:opacity .2s ease, transform .24s cubic-bezier(.2,1.3,.35,1);
+}
+.dropdown-panel.show{ opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
+.dropdown-option{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  width:100%; text-align:left; padding:11px 13px; border-radius:11px; border:none;
+  background:transparent; color:var(--text); font-weight:600; font-size:14px;
+  transition:background .15s ease, color .15s ease, transform .12s ease;
+}
+.dropdown-option:hover{ background:var(--surface-2); transform:translateX(2px); }
+.dropdown-option.active{ background:linear-gradient(120deg, var(--violet), var(--violet-deep)); color:#fff; animation:tabPop .35s cubic-bezier(.3,1.6,.5,1); }
+.dropdown-option .check{ opacity:0; font-size:12px; font-weight:800; }
+.dropdown-option.active .check{ opacity:1; }
+
+.sort-seg{ display:flex; gap:4px; background:var(--surface); padding:5px; border-radius:14px; border:1px solid var(--border); }
+.sort-seg-btn{
+  border:none; background:transparent; color:var(--text-muted); font-weight:700; font-size:13px;
+  padding:9px 17px; border-radius:10px; transition:background .22s ease, color .2s ease, transform .15s ease;
+}
+.sort-seg-btn:hover{ color:var(--text); }
+.sort-seg-btn.active{ background:linear-gradient(120deg, var(--violet), var(--violet-deep)); color:#fff; box-shadow:0 8px 18px rgba(109,40,217,.32); animation:tabPop .35s cubic-bezier(.3,1.6,.5,1); }
+.sort-seg-btn:active{ transform:scale(.94); }
+.pill-btn{
+  border:1px solid var(--border); background:var(--surface); color:var(--text-muted);
+  font-weight:700; font-size:13.5px; padding:10px 19px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:9px;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+  transition:transform .18s cubic-bezier(.3,1.4,.6,1), background .22s ease, color .2s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.pill-btn:hover{ transform:translateY(-2px); border-color:var(--border-strong); color:var(--text); }
+.pill-btn:active{ transform:translateY(0) scale(.95); }
+.pill-btn.active{
+  color:#fff; border-color:transparent;
+  box-shadow:0 10px 22px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.25);
+  transform:translateY(-1px);
+  animation:tabPop .4s cubic-bezier(.3,1.6,.5,1);
+}
+.pill-btn .dot{ width:9px; height:9px; border-radius:50%; display:inline-block; flex:none; }
+
+.pack-scroll{
+  display:flex; gap:10px; overflow-x:auto; padding:2px 2px 10px;
+  scroll-snap-type:x proximity;
+}
+.pack-scroll::-webkit-scrollbar{ height:7px; }
+.pack-chip{
+  flex:none; scroll-snap-align:start; white-space:nowrap;
+  border:1px solid var(--border); background:var(--surface); color:var(--text-muted);
+  font-weight:700; font-size:13.5px; padding:10px 20px; border-radius:14px;
+  transition:transform .18s cubic-bezier(.3,1.4,.6,1), background .22s ease, color .2s ease, border-color .22s ease, box-shadow .22s ease;
+}
+.pack-chip:hover{ transform:translateY(-2px); border-color:var(--border-strong); color:var(--text); }
+.pack-chip:active{ transform:translateY(0) scale(.96); }
+.pack-chip.active{
+  color:#fff; border-color:var(--violet);
+  background:linear-gradient(120deg, var(--violet), var(--violet-deep));
+  box-shadow:0 10px 22px rgba(109,40,217,.35), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:16px;
+}
+.char-tile{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+  padding:14px; text-align:center; position:relative; overflow:hidden;
+  transition:transform .22s cubic-bezier(.3,1.4,.6,1), box-shadow .22s ease, border-color .22s ease;
+  opacity:0; animation:tileIn .5s cubic-bezier(.2,1,.3,1) forwards;
+  animation-delay:var(--tile-delay, 0ms);
+}
+@keyframes tileIn{
+  from{ opacity:0; transform:translateY(16px) scale(.93); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+.char-tile:hover{ transform:translateY(-6px) scale(1.015); box-shadow:var(--shadow-md); border-color:var(--border-strong); }
+.char-tile.locked{ opacity:0; filter:grayscale(.7); animation:tileInLocked .5s cubic-bezier(.2,1,.3,1) forwards; animation-delay:var(--tile-delay, 0ms); }
+@keyframes tileInLocked{
+  from{ opacity:0; transform:translateY(16px) scale(.93); }
+  to{ opacity:.55; transform:translateY(0) scale(1); }
+}
+.char-tile.locked:hover{ transform:none; }
+.char-visual{
+  width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden; margin-bottom:10px;
+  display:flex; align-items:center; justify-content:center; position:relative;
+  background:var(--surface-2);
+}
+.char-visual img{ width:100%; height:100%; object-fit:cover; display:block; }
+.char-visual .fallback{
+  width:100%; height:100%; display:none; align-items:center; justify-content:center;
+  font-size:44px; font-family:var(--font-display); font-weight:800; color:#241a00;
+}
+.char-visual.show-fallback img{ display:none; }
+.char-visual.show-fallback .fallback{ display:flex; }
+.char-visual .lock-icon{ font-size:34px; opacity:.7; }
+.char-tile .cname{ font-weight:700; font-size:14px; margin-bottom:4px; }
+.rarity-pill{
+  display:inline-block; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px;
+  padding:3px 9px; border-radius:999px; color:#fff;
+}
+.qty-tag{
+  position:absolute; top:8px; right:8px; z-index:3; background:rgba(0,0,0,.55); color:#fff;
+  font-size:11.5px; font-weight:800; padding:3px 8px; border-radius:999px; backdrop-filter:blur(4px);
+}
+.num-tag{
+  position:absolute; top:8px; left:8px; z-index:3; background:rgba(0,0,0,.45); color:rgba(255,255,255,.85);
+  font-size:10.5px; font-weight:800; padding:3px 8px; border-radius:999px; backdrop-filter:blur(4px);
+  font-variant-numeric:tabular-nums; letter-spacing:.3px;
+}
+[data-theme="light"] .num-tag{ background:rgba(36,26,68,.12); color:var(--text-muted); }
+
+/* ============================= MODAL (preview) ============================= */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(6,4,14,.68); backdrop-filter:blur(6px);
+  display:none; align-items:center; justify-content:center; z-index:80; padding:20px;
+  animation:fadeIn .25s ease;
+}
+.modal-backdrop.show{ display:flex; }
+@keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+.preview-card{
+  background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-lg);
+  width:100%; max-width:340px; padding:26px; text-align:center; position:relative;
+  box-shadow:var(--shadow-lg); animation:popIn .3s cubic-bezier(.3,1.4,.5,1);
+}
+@keyframes popIn{ from{ opacity:0; transform:scale(.85) translateY(20px); } to{ opacity:1; transform:scale(1) translateY(0); } }
+.preview-card .close-x{
+  position:absolute; top:14px; right:14px; background:var(--surface); border:1px solid var(--border);
+  width:34px; height:34px; border-radius:10px; color:var(--text); font-size:16px;
+}
+.preview-visual{
+  width:200px; height:200px; margin:0 auto 16px; border-radius:22px; overflow:hidden;
+  background:var(--surface-2); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.3);
+}
+.preview-visual img{ width:100%; height:100%; object-fit:cover; }
+.preview-visual .fallback{ font-size:70px; font-family:var(--font-display); font-weight:800; color:#241a00; display:none; align-items:center; justify-content:center; width:100%; height:100%; }
+.preview-visual.show-fallback img{ display:none; }
+.preview-visual.show-fallback .fallback{ display:flex; }
+.preview-card h2{ margin:6px 0 8px; font-family:var(--font-display); font-size:23px; }
+.preview-meta{ display:flex; justify-content:center; gap:10px; margin-top:6px; align-items:center; }
+.preview-owned{ margin-top:14px; font-size:13.5px; color:var(--text-muted); font-weight:600; }
+.preview-num{
+  font-family:var(--font-body); font-weight:800; font-size:12.5px; color:var(--text-muted);
+  background:var(--surface-2); border:1px solid var(--border); padding:5px 11px; border-radius:999px;
+  font-variant-numeric:tabular-nums; letter-spacing:.3px;
+}
+
+.pack-info-card{ max-width:520px; text-align:left; }
+.pack-info-card h2{ text-align:left; padding-right:36px; }
+.pack-info-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:12px;
+  max-height:380px; overflow-y:auto; padding-right:4px; margin-top:12px;
+}
+
+/* ============================= PACK OPENING OVERLAY ============================= */
+.opening-overlay{
+  position:fixed; inset:0; z-index:100; display:none;
+  align-items:center; justify-content:center; overflow:hidden;
+  background:radial-gradient(1200px 800px at 50% 40%, #1c1732, #07050d 75%);
+}
+.opening-overlay.show{ display:flex; }
+.confetti-canvas{ position:absolute; inset:0; pointer-events:none; z-index:5; }
+
+.opening-stage{ position:relative; display:flex; flex-direction:column; align-items:center; gap:26px; z-index:2; }
+
+.opening-pack{
+  width:220px; height:290px; border-radius:26px; position:relative;
+  background:linear-gradient(155deg, var(--pack-color, var(--banana)), var(--pack-color2, var(--banana-deep)));
+  box-shadow:0 0 0 rgba(255,210,63,0);
+  display:flex; align-items:center; justify-content:center;
+}
+.opening-pack .pack-icon{
+  width:74px; height:94px; border-radius:12px; position:relative;
+  background:rgba(255,255,255,.22); border:2px solid rgba(255,255,255,.55);
+  display:flex; align-items:center; justify-content:center;
+  animation:iconPulse .9s cubic-bezier(.45,0,.55,1) infinite;
+}
+.opening-pack .pack-icon::before{ content:''; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.7); animation:iconDotPulse .9s cubic-bezier(.45,0,.55,1) infinite; }
+@keyframes iconPulse{ 0%,100%{ transform:scale(1) rotate(0deg); } 50%{ transform:scale(1.14) rotate(-6deg); } }
+@keyframes iconDotPulse{ 0%,100%{ opacity:.7; transform:scale(1); } 50%{ opacity:1; transform:scale(1.25); } }
+
+/* charging phase: universal buildup, gets faster and tighter the closer it gets to bursting */
+.opening-pack.charging{ animation:packCharge 1.1s cubic-bezier(.45,0,.55,1) infinite; }
+@keyframes packCharge{
+  0%,100%{ transform:scale(1) rotate(-1.5deg); filter:brightness(1); }
+  50%{ transform:scale(1.06) rotate(1.5deg); filter:brightness(1.18); }
+}
+.opening-pack.charging.urgent{ animation:packChargeUrgent .38s cubic-bezier(.5,0,.5,1) infinite; }
+@keyframes packChargeUrgent{
+  0%,100%{ transform:scale(1.04) rotate(-3.5deg); filter:brightness(1.1); }
+  50%{ transform:scale(1.14) rotate(3.5deg); filter:brightness(1.35); }
+}
+.glow-ring{
+  position:absolute; width:220px; height:290px; border-radius:26px;
+  box-shadow:0 0 0 0 var(--glow-color, var(--banana));
+  animation:ringPulse 1.1s cubic-bezier(.2,.8,.3,1) infinite;
+  opacity:0;
+}
+.charging .glow-ring{ opacity:1; }
+.charging.urgent .glow-ring{ animation:ringPulse .5s cubic-bezier(.2,.8,.3,1) infinite; }
+@keyframes ringPulse{
+  0%{ box-shadow:0 0 0 0 var(--glow-color); opacity:.9; }
+  100%{ box-shadow:0 0 70px 30px transparent; opacity:0; }
+}
+
+/* burst flash */
+.burst-flash{
+  position:absolute; inset:-100vh -100vw; background:radial-gradient(circle, #fff, transparent 60%);
+  opacity:0; pointer-events:none;
+}
+.burst-flash.go{ animation:flashPop .5s ease-out; }
+@keyframes flashPop{ 0%{ opacity:0; } 15%{ opacity:.95; } 100%{ opacity:0; } }
+
+.opening-pack.bursting{ animation:packBurst .5s cubic-bezier(.3,0,.2,1) forwards; }
+@keyframes packBurst{ 0%{ transform:scale(1); } 40%{ transform:scale(1.25) rotate(-4deg); } 100%{ transform:scale(0); opacity:0; } }
+
+.status-text{ font-family:var(--font-display); font-size:15px; color:var(--text-muted); letter-spacing:.5px; text-transform:uppercase; font-weight:700; min-height:20px; }
+
+/* reveal card */
+.reveal-card{
+  width:270px; padding:26px; border-radius:28px; text-align:center; position:relative;
+  opacity:0; transform:scale(.6) translateY(30px);
+  box-shadow:var(--shadow-lg);
+}
+.reveal-card.enter{ animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards; }
+@keyframes revealIn{ to{ opacity:1; transform:scale(1) translateY(0); } }
+.reveal-visual{
+  width:190px; height:190px; margin:0 auto 16px; border-radius:22px; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.2);
+}
+.reveal-visual img{ width:100%; height:100%; object-fit:cover; }
+.reveal-visual .fallback{ font-size:64px; font-family:var(--font-display); font-weight:800; color:#241a00; width:100%; height:100%; display:none; align-items:center; justify-content:center; }
+.reveal-visual.show-fallback img{ display:none; }
+.reveal-visual.show-fallback .fallback{ display:flex; }
+.reveal-num{ font-size:12px; font-weight:800; letter-spacing:1px; color:rgba(255,255,255,.75); font-variant-numeric:tabular-nums; margin-bottom:2px; }
+.reveal-card h2{ font-family:var(--font-display); font-size:25px; margin:4px 0 10px; color:#fff; }
+.reveal-rarity{ font-family:var(--font-display); font-weight:800; letter-spacing:1px; text-transform:uppercase; font-size:14px; color:#fff; opacity:.92; }
+
+.claim-btn{
+  margin-top:22px; border:none; border-radius:16px; padding:14px 40px;
+  font-family:var(--font-display); font-weight:700; font-size:17px; color:#241a00;
+  background:linear-gradient(120deg, #fff, var(--banana));
+  box-shadow:0 14px 30px rgba(255,255,255,.25);
+  opacity:0; transform:translateY(14px); pointer-events:none;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+.claim-btn.show{ opacity:1; transform:translateY(0); pointer-events:auto; animation:claimPop .5s cubic-bezier(.3,1.5,.5,1); }
+@keyframes claimPop{ 0%{ transform:scale(.7) translateY(20px); opacity:0; } 100%{ transform:scale(1) translateY(0); opacity:1; } }
+.claim-btn:hover{ transform:translateY(-3px); box-shadow:0 18px 36px rgba(255,255,255,.35); }
+.claim-btn:active{ transform:translateY(0) scale(.96); }
+
+/* rarity theme classes reused for glow-color + reveal-card bg + rays */
+.rarity-common{ --glow-color: var(--c-common); }
+.rarity-uncommon{ --glow-color: var(--c-uncommon); }
+.rarity-rare{ --glow-color: var(--c-rare); }
+.rarity-epic{ --glow-color: var(--c-epic); }
+.rarity-legendary{ --glow-color: var(--c-legendary); }
+.rarity-mythic{ --glow-color: var(--c-mythic); }
+.rarity-bumhole{ --glow-color: var(--c-bumhole); }
+
+.reveal-card.rarity-common{ background:linear-gradient(160deg, var(--c-common), var(--c-common-2)); }
+.reveal-card.rarity-uncommon{ background:linear-gradient(160deg, var(--c-uncommon), var(--c-uncommon-2)); }
+.reveal-card.rarity-rare{ background:linear-gradient(160deg, var(--c-rare), var(--c-rare-2)); }
+.reveal-card.rarity-epic{ background:linear-gradient(160deg, var(--c-epic), var(--c-epic-2)); }
+.reveal-card.rarity-legendary{ background:linear-gradient(160deg, var(--c-legendary), var(--c-legendary-2)); }
+.reveal-card.rarity-mythic{ background:linear-gradient(135deg, var(--c-mythic), var(--c-mythic-2), var(--c-mythic)); background-size:300% 300%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 2.4s linear infinite 0.7s; }
+.reveal-card.rarity-bumhole{ background:linear-gradient(135deg, var(--c-bumhole), var(--c-bumhole-2), #d9b45c, var(--c-bumhole-2)); background-size:400% 400%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 1.6s linear infinite 0.7s; }
+@keyframes holoShift{ 0%{ background-position:0% 50%; } 100%{ background-position:100% 50%; } }
+
+/* extra flair layers, toggled by JS adding classes to overlay */
+.rays{
+  position:absolute; width:900px; height:900px; border-radius:50%; opacity:0; pointer-events:none;
+  background:repeating-conic-gradient(from 0deg, rgba(255,255,255,.35) 0deg 3deg, transparent 3deg 18deg);
+}
+.rays.spin{ animation:raySpin 4s linear infinite, rayFade .4s ease forwards; opacity:1; }
+@keyframes raySpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+@keyframes rayFade{ from{ opacity:0; } to{ opacity:.5; } }
+
+.shake{ animation:screenShake .4s ease-in-out; }
+.shake-hard{ animation:screenShakeHard .55s ease-in-out infinite; }
+@keyframes screenShake{ 0%,100%{ transform:translate(0,0); } 20%{ transform:translate(-6px,3px); } 40%{ transform:translate(6px,-3px); } 60%{ transform:translate(-4px,4px); } 80%{ transform:translate(4px,-2px); } }
+@keyframes screenShakeHard{ 0%,100%{ transform:translate(0,0) rotate(0deg); } 25%{ transform:translate(-9px,5px) rotate(-.6deg); } 50%{ transform:translate(9px,-5px) rotate(.6deg); } 75%{ transform:translate(-6px,-4px) rotate(-.3deg); } }
+
+.glitch-text{ position:relative; }
+.glitch-text.go{ animation:glitchShift .18s steps(2) infinite; }
+@keyframes glitchShift{
+  0%{ text-shadow:2px 0 var(--pink), -2px 0 var(--sky); }
+  50%{ text-shadow:-2px 0 var(--pink), 2px 0 var(--sky); }
+  100%{ text-shadow:2px 0 var(--sky), -2px 0 var(--pink); }
+}
+
+.orbit-wrap{ position:absolute; width:340px; height:340px; pointer-events:none; }
+.orbiter{ position:absolute; top:50%; left:50%; width:14px; height:14px; border-radius:50%; margin:-7px; }
+.orbiter{ --radius:150px; }
+.orbiter.spin{ animation:orbitSpin linear infinite; }
+@keyframes orbitSpin{
+  from{ transform:rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+  to{ transform:rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
+}
+
+.legend-banner{
+  position:absolute; top:8%; font-family:var(--font-display); font-weight:800; font-size:15px;
+  letter-spacing:3px; color:#fff; opacity:0; text-transform:uppercase;
+}
+.legend-banner.go{ animation:bannerFly 1.4s ease-out forwards; }
+@keyframes bannerFly{ 0%{ opacity:0; transform:translateY(-10px) scale(.7); } 30%{ opacity:1; transform:translateY(0) scale(1.1); } 60%{ transform:scale(1); } 100%{ opacity:1; } }
+
+.close-open-btn{
+  margin-top:6px; background:transparent; border:1px solid rgba(255,255,255,.3); color:#fff;
+  padding:9px 20px; border-radius:12px; font-weight:700; font-size:13px; opacity:0; pointer-events:none;
+}
+.close-open-btn.show{ opacity:1; pointer-events:auto; }
+
+/* ============================= EMPTY STATES ============================= */
+.empty-state{ text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty-state .big{ font-size:46px; margin-bottom:10px; }
+
+/* ============================= RESPONSIVE ============================= */
+@media (max-width:640px){
+  .brand span.label{ display:none; }
+  .tabs{ gap:2px; }
+  .tab-btn{ padding:8px 12px; font-size:13px; }
+  .grid{ grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); }
+  .pack-card{ width:210px; height:280px; }
+  .opening-pack{ width:170px; height:230px; }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand"><span class="peel">👃</span><b>Snotty</b><span class="label">BananaPacks</span></div>
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-view="home">Home</button>
+    <button class="tab-btn" data-view="inventory">Inventory<span class="badge" id="invBadge" style="display:none">0</span></button>
+    <button class="tab-btn" data-view="index">Index</button>
+  </nav>
+  <div class="header-actions">
+    <button class="icon-btn" id="soundToggle" title="Toggle sound" aria-label="Toggle sound effects">🔊</button>
+    <button class="icon-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle dark or light mode">🌙</button>
+  </div>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section class="view active" id="view-home">
+    <div class="section-head">
+      <h1>Packs</h1>
+    </div>
+    <div class="home-stage">
+      <div class="pack-picker" id="packPicker"></div>
+    </div>
+  </section>
+
+  <!-- INVENTORY -->
+  <section class="view" id="view-inventory">
+    <div class="section-head">
+      <h1>Inventory</h1>
+    </div>
+    <div id="inventoryGrid" class="grid"></div>
+    <div class="odds-card">
+      <h3>Drop rates</h3>
+      <div class="odds-grid" id="oddsListInventory"></div>
+    </div>
+  </section>
+
+  <!-- INDEX -->
+  <section class="view" id="view-index">
+    <div class="section-head">
+      <h1>Index</h1>
+    </div>
+    <div class="toolbar">
+      <div class="toolbar-row">
+        <div class="dropdown" id="packDropdown">
+          <button class="dropdown-trigger" id="packDropdownTrigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+            <span id="packDropdownLabel">All packs</span>
+            <span class="dropdown-arrow">▾</span>
+          </button>
+          <div class="dropdown-panel" id="packDropdownPanel" role="listbox"></div>
+        </div>
+        <div class="sort-seg" id="sortSeg"></div>
+      </div>
+      <div class="pill-row" id="filterRarityPills"></div>
+    </div>
+    <div id="indexGrid" class="grid"></div>
+    <div class="odds-card">
+      <h3>Drop rates</h3>
+      <div class="odds-grid" id="oddsListIndex"></div>
+    </div>
+  </section>
+</main>
+
+<!-- Character preview modal -->
+<div class="modal-backdrop" id="previewModal">
+  <div class="preview-card">
+    <button class="close-x" id="previewClose">✕</button>
+    <div class="preview-visual" id="previewVisual">
+      <img alt="">
+      <div class="fallback"></div>
+    </div>
+    <h2 id="previewName">—</h2>
+    <div class="preview-meta"><span class="preview-num" id="previewNum">#000</span><span class="rarity-pill" id="previewRarity">—</span></div>
+    <div class="preview-owned" id="previewOwned">Owned x0</div>
+  </div>
+</div>
+
+<!-- Pack contents info modal -->
+<div class="modal-backdrop" id="packInfoModal">
+  <div class="preview-card pack-info-card">
+    <button class="close-x" id="packInfoClose">✕</button>
+    <h2 id="packInfoTitle">—</h2>
+    <div class="pack-info-grid" id="packInfoGrid"></div>
+  </div>
+</div>
+
+<!-- Pack opening overlay -->
+<div class="opening-overlay" id="openingOverlay">
+  <div class="burst-flash" id="burstFlash"></div>
+  <div class="rays" id="rays"></div>
+  <div class="orbit-wrap" id="orbitWrap"></div>
+  <div class="legend-banner" id="legendBanner"></div>
+  <canvas class="confetti-canvas" id="confettiCanvas"></canvas>
+
+  <div class="opening-stage">
+    <div class="status-text" id="statusText">Opening...</div>
+
+    <div class="opening-pack charging" id="openingPack">
+      <div class="glow-ring"></div>
+      <div class="pack-icon"></div>
+    </div>
+
+    <div class="reveal-card" id="revealCard" style="display:none">
+      <div class="reveal-visual" id="revealVisual">
+        <img alt="">
+        <div class="fallback"></div>
+      </div>
+      <div class="reveal-num" id="revealNum">#000</div>
+      <h2 id="revealName">—</h2>
+      <div class="reveal-rarity" id="revealRarity">—</div>
+    </div>
+
+    <button class="claim-btn" id="claimBtn">Claim</button>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ======================= DATA (expand here later) ======================= */
+
+const RARITIES = {
+  common:    { label:"Common",    order:0, weight:60,      color:"var(--c-common)",    color2:"var(--c-common-2)",    duration:2000 },
+  uncommon:  { label:"Uncommon",  order:1, weight:25,      color:"var(--c-uncommon)",  color2:"var(--c-uncommon-2)",  duration:2000 },
+  rare:      { label:"Rare",      order:2, weight:10,      color:"var(--c-rare)",      color2:"var(--c-rare-2)",      duration:2000 },
+  epic:      { label:"Epic",      order:3, weight:4,       color:"var(--c-epic)",      color2:"var(--c-epic-2)",      duration:2000 },
+  legendary: { label:"Legendary", order:4, weight:1,       color:"var(--c-legendary)", color2:"var(--c-legendary-2)", duration:2500 },
+  mythic:    { label:"Mythic",    order:5, weight:0.05,    color:"var(--c-mythic)",    color2:"var(--c-mythic-2)",    duration:5000 },
+  bumhole:   { label:"Bumhole",   order:6, weight:0.0001,  color:"var(--c-bumhole)",   color2:"var(--c-bumhole-2)",   duration:12553.4 },
+};
+
+const PACKS = [
+  { id:"orin-pack", name:"Orin Pack", color:"#FF8A3D", color2:"#E8590C" },
+];
+
+// Add new characters here later; everything else adapts automatically.
+// IMPORTANT: "num" is each character's permanent dex number (like Pokemon).
+// Once assigned, a character's num must NEVER be changed or reused, even if
+// characters are reordered, renamed, or removed from this list. When adding
+// a new character, always give it the NEXT number after the current highest
+// (e.g. the 4th character ever added gets num:4, the 5th gets num:5, etc).
+const CHARACTERS = [
+  { id:"orin",         name:"Orin",         rarity:"common",   packId:"orin-pack", image:"images/Orin.jpg",        num:1 },
+  { id:"farmer-orin",  name:"Farmer Orin",  rarity:"common",   packId:"orin-pack", image:"images/FarmerOrin.jpg",  num:2 },
+  { id:"chubby-orin",  name:"Chubby Orin",  rarity:"uncommon", packId:"orin-pack", image:"images/ChubbyOrin.jpg", num:3 },
+];
+
+const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
+
+/* ======================= SOUND (synthesized, no audio files needed) ======================= */
+
+const Sound = (function(){
+  let ctx = null;
+  let enabled = localStorage.getItem("sbp_sound") !== "off";
+
+  function ensureCtx(){
+    if(!enabled) return null;
+    if(!ctx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return null;
+      ctx = new AC();
+    }
+    if(ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+
+  function tone(freq, opts){
+    opts = opts || {};
+    const duration = opts.duration!==undefined ? opts.duration : 0.15;
+    const type = opts.type || "sine";
+    const volume = opts.volume!==undefined ? opts.volume : 0.16;
+    const delay = opts.delay || 0;
+    const freqEnd = opts.freqEnd!==undefined ? opts.freqEnd : null;
+    const attack = opts.attack!==undefined ? opts.attack : 0.005;
+    const release = opts.release!==undefined ? opts.release : 0.08;
+    const c = ensureCtx();
+    if(!c) return;
+    const t0 = c.currentTime + delay;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    if(freqEnd!==null) osc.frequency.exponentialRampToValueAtTime(Math.max(freqEnd,1), t0+duration);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(volume, t0+attack);
+    gain.gain.linearRampToValueAtTime(0.0001, t0+duration+release);
+    osc.connect(gain).connect(c.destination);
+    osc.start(t0);
+    osc.stop(t0+duration+release+0.03);
+  }
+
+  function noiseBurst(opts){
+    opts = opts || {};
+    const duration = opts.duration!==undefined ? opts.duration : 0.2;
+    const volume = opts.volume!==undefined ? opts.volume : 0.14;
+    const delay = opts.delay || 0;
+    const filterFreq = opts.filterFreq!==undefined ? opts.filterFreq : 4000;
+    const c = ensureCtx();
+    if(!c) return;
+    const t0 = c.currentTime + delay;
+    const bufferSize = Math.max(1, Math.floor(c.sampleRate*duration));
+    const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+    const src = c.createBufferSource();
+    src.buffer = buffer;
+    const filter = c.createBiquadFilter();
+    filter.type = "highpass";
+    filter.frequency.value = filterFreq;
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(volume, t0);
+    gain.gain.linearRampToValueAtTime(0.0001, t0+duration);
+    src.connect(filter).connect(gain).connect(c.destination);
+    src.start(t0);
+  }
+
+  function click(){ tone(720, {duration:0.05, type:"sine", volume:0.11, attack:0.002, release:0.03}); }
+
+  function pillSelect(pitchIndex){
+    const idx = pitchIndex || 0;
+    const freq = 480 + idx*35;
+    tone(freq, {duration:0.07, type:"triangle", volume:0.14, attack:0.002, release:0.05});
+    tone(freq*1.5, {duration:0.05, type:"sine", volume:0.07, delay:0.03, release:0.04});
+  }
+
+  function packSelect(){
+    tone(340, {duration:0.08, type:"sine", volume:0.13, release:0.06});
+    tone(500, {duration:0.08, type:"sine", volume:0.1, delay:0.05, release:0.06});
+  }
+
+  function heartbeatTick(){ tone(70, {duration:0.09, type:"sine", volume:0.15, attack:0.002, release:0.05}); }
+
+  function burst(){
+    tone(140, {duration:0.35, type:"sawtooth", volume:0.17, freqEnd:900, attack:0.005, release:0.15});
+    noiseBurst({duration:0.3, volume:0.13, filterFreq:2000});
+  }
+
+  function claim(){
+    tone(600, {duration:0.09, type:"sine", volume:0.16, release:0.08});
+    tone(900, {duration:0.12, type:"sine", volume:0.14, delay:0.08, release:0.1});
+  }
+
+  function fanfare(rarity){
+    switch(rarity){
+      case "common":
+        tone(520, {duration:0.16, type:"sine", volume:0.15});
+        break;
+      case "uncommon":
+        tone(500, {duration:0.12, type:"sine", volume:0.15});
+        tone(700, {duration:0.14, type:"sine", volume:0.13, delay:0.1});
+        break;
+      case "rare":
+        [560,700,900].forEach((f,i)=>tone(f, {duration:0.13, type:"sine", volume:0.14, delay:i*0.09}));
+        noiseBurst({duration:0.2, volume:0.08, delay:0.05, filterFreq:6000});
+        break;
+      case "epic":
+        [440,660,880,1100].forEach((f,i)=>tone(f, {duration:0.16, type:"triangle", volume:0.13, delay:i*0.1}));
+        noiseBurst({duration:0.25, volume:0.09, delay:0.1, filterFreq:5000});
+        break;
+      case "legendary":
+        [523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f, {duration:0.4, type:"triangle", volume:0.14, delay:i*0.03, release:0.3}));
+        noiseBurst({duration:0.4, volume:0.11, delay:0.02, filterFreq:3000});
+        break;
+      case "mythic":
+        [392,523.25,659.25,783.99,1046.5].forEach((f,i)=>tone(f, {duration:0.5, type:"triangle", volume:0.12, delay:i*0.06, release:0.4}));
+        noiseBurst({duration:0.6, volume:0.12, delay:0.05, filterFreq:2500});
+        break;
+      case "bumhole":
+        tone(300, {duration:0.5, type:"sawtooth", volume:0.17, freqEnd:80, attack:0.01, release:0.2});
+        tone(200, {duration:0.4, type:"square", volume:0.09, delay:0.3, freqEnd:60, release:0.2});
+        break;
+    }
+  }
+
+  function honk(i){
+    const base = 220 + (i%3)*40;
+    tone(base, {duration:0.35, type:"sawtooth", volume:0.14, freqEnd:base*0.4, attack:0.01, release:0.15});
+  }
+
+  function setEnabled(v){
+    enabled = v;
+    localStorage.setItem("sbp_sound", v ? "on" : "off");
+  }
+  function isEnabled(){ return enabled; }
+
+  return { click, pillSelect, packSelect, heartbeatTick, burst, claim, fanfare, honk, setEnabled, isEnabled };
+})();
+
+/* ======================= STORAGE ======================= */
+
+const LS_KEYS = { inventory:"sbp_inventory", newIds:"sbp_new_ids", theme:"sbp_theme" };
+
+function loadJSON(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(raw===null) return fallback;
+    return JSON.parse(raw);
+  }catch(e){ return fallback; }
+}
+function saveJSON(key, value){
+  try{ localStorage.setItem(key, JSON.stringify(value)); }catch(e){ /* storage unavailable */ }
+}
+
+let inventory = loadJSON(LS_KEYS.inventory, {});   // { charId: qty }
+let newIds    = loadJSON(LS_KEYS.newIds, []);       // [charId, ...] unseen-in-inventory
+let theme     = localStorage.getItem(LS_KEYS.theme) || "dark";
+
+function persistInventory(){ saveJSON(LS_KEYS.inventory, inventory); }
+function persistNewIds(){ saveJSON(LS_KEYS.newIds, newIds); }
+
+/* ======================= THEME ======================= */
+
+function applyTheme(t){
+  document.documentElement.setAttribute("data-theme", t);
+  document.getElementById("themeToggle").textContent = t==="dark" ? "🌙" : "☀️";
+  localStorage.setItem(LS_KEYS.theme, t);
+}
+applyTheme(theme);
+document.getElementById("themeToggle").addEventListener("click", ()=>{
+  theme = theme==="dark" ? "light" : "dark";
+  applyTheme(theme);
+  Sound.click();
+});
+
+const soundToggleBtn = document.getElementById("soundToggle");
+function updateSoundIcon(){ soundToggleBtn.textContent = Sound.isEnabled() ? "🔊" : "🔇"; }
+updateSoundIcon();
+soundToggleBtn.addEventListener("click", ()=>{
+  Sound.setEnabled(!Sound.isEnabled());
+  updateSoundIcon();
+  if(Sound.isEnabled()) Sound.click();
+});
+
+/* ======================= TABS ======================= */
+
+const tabButtons = document.querySelectorAll(".tab-btn");
+tabButtons.forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const view = btn.dataset.view;
+    Sound.click();
+    tabButtons.forEach(b=>b.classList.toggle("active", b===btn));
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    document.getElementById("view-"+view).classList.add("active");
+    if(view==="inventory"){ clearNewBadge(); renderInventory(); }
+    if(view==="index"){ renderIndex(); }
+  });
+});
+
+/* ======================= HELPERS ======================= */
+
+function charById(id){ return CHARACTERS.find(c=>c.id===id); }
+function packName(id){ const p = PACKS.find(p=>p.id===id); return p ? p.name : id; }
+function initials(name){
+  return name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
+}
+function formatNum(n){
+  return "#" + String(n).padStart(3,"0");
+}
+function tileDelay(i){
+  return ` style="--tile-delay:${Math.min(i,16)*28}ms"`;
+}
+// Wires an <img>/.fallback pair: on load error, shows the fallback.
+function wireVisual(container, character){
+  const img = container.querySelector("img");
+  const fb  = container.querySelector(".fallback");
+  container.classList.remove("show-fallback");
+  fb.textContent = initials(character.name);
+  fb.style.background = `linear-gradient(155deg, ${RARITIES[character.rarity].color}, ${RARITIES[character.rarity].color2})`;
+  img.onerror = ()=>{ container.classList.add("show-fallback"); };
+  img.src = character.image;
+  img.alt = character.name;
+}
+
+function formatBadgeCount(n){ return n>99 ? "99+" : String(n); }
+
+function clearNewBadge(){
+  newIds = [];
+  persistNewIds();
+  updateBadgeUI();
+}
+function updateBadgeUI(){
+  const el = document.getElementById("invBadge");
+  if(newIds.length>0){
+    el.style.display = "flex";
+    el.textContent = formatBadgeCount(newIds.length);
+  } else {
+    el.style.display = "none";
+  }
+}
+updateBadgeUI();
+
+/* ======================= PACK PICKER (home) ======================= */
+
+function renderPackPicker(){
+  const wrap = document.getElementById("packPicker");
+  wrap.innerHTML = PACKS.map(p=>{
+    const count = CHARACTERS.filter(c=>c.packId===p.id).length;
+    return `<div class="pack-card" style="--pack-color:${p.color}; --pack-color2:${p.color2}">
+      <div class="layer back2"></div>
+      <div class="layer back1"></div>
+      <div class="layer front">
+        <div class="pack-name">${p.name}</div>
+        <div class="pack-sub">${count} character${count===1?"":"s"}</div>
+        <button class="pack-open-btn" data-pack-id="${p.id}">Open Pack</button>
+      </div>
+      <button class="pack-info-btn" data-pack-id="${p.id}" title="View pack contents" aria-label="View pack contents">i</button>
+    </div>`;
+  }).join("");
+
+  wrap.querySelectorAll(".pack-open-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ Sound.packSelect(); startPackOpening(btn.dataset.packId); });
+  });
+  wrap.querySelectorAll(".pack-info-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ Sound.click(); openPackInfo(btn.dataset.packId); });
+  });
+}
+renderPackPicker();
+
+/* ======================= ODDS LIST (Inventory / Index) ======================= */
+
+function renderOddsInto(containerId){
+  const list = document.getElementById(containerId);
+  if(!list) return;
+  list.innerHTML = RARITY_ORDER.map(key=>{
+    const r = RARITIES[key];
+    return `<div class="odds-row">
+      <span class="name"><span class="swatch" style="background:linear-gradient(120deg, ${r.color}, ${r.color2}); box-shadow:0 0 8px ${r.color}"></span>${r.label}</span>
+      <span class="pct">${r.weight}%</span>
+    </div>`;
+  }).join("");
+}
+renderOddsInto("oddsListInventory");
+renderOddsInto("oddsListIndex");
+
+/* ======================= INVENTORY VIEW ======================= */
+
+function renderInventory(){
+  const grid = document.getElementById("inventoryGrid");
+  const ownedIds = Object.keys(inventory).filter(id=>inventory[id]>0);
+
+  if(ownedIds.length===0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <div class="big">📦</div>
+      <div>No characters yet — open your first pack!</div>
+    </div>`;
+    return;
+  }
+
+  const sorted = ownedIds
+    .map(id=>charById(id))
+    .filter(Boolean)
+    .sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
+
+  grid.innerHTML = sorted.map((c,i)=>{
+    const r = RARITIES[c.rarity];
+    return `<div class="char-tile clickable"${tileDelay(i)} data-id="${c.id}">
+      <div class="num-tag">${formatNum(c.num)}</div>
+      <div class="qty-tag">x${inventory[c.id]}</div>
+      <div class="char-visual" data-visual="${c.id}">
+        <img alt="">
+        <div class="fallback"></div>
+      </div>
+      <div class="cname">${c.name}</div>
+      <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
+    </div>`;
+  }).join("");
+
+  sorted.forEach(c=>{
+    const container = grid.querySelector(`[data-visual="${c.id}"]`);
+    wireVisual(container, c);
+  });
+
+  grid.querySelectorAll(".char-tile").forEach(tile=>{
+    tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id); });
+  });
+}
+
+/* ======================= INDEX VIEW ======================= */
+
+let currentPackFilter = "all";
+let currentRarityFilter = "all";
+let currentSort = "rarity"; // "rarity" | "number"
+
+function renderFilterPills(){
+  const rarityWrap = document.getElementById("filterRarityPills");
+
+  const rarityOptions = [{ key:"all", label:"All rarities", color:null }].concat(
+    RARITY_ORDER.map(k=>({ key:k, label:RARITIES[k].label, color:RARITIES[k].color, color2:RARITIES[k].color2 }))
+  );
+  rarityWrap.innerHTML = rarityOptions.map(r=>{
+    const active = currentRarityFilter===r.key;
+    const style = active ? ` style="background:linear-gradient(120deg, ${r.color||"var(--violet)"}, ${r.color2||"var(--violet-deep)"}); border-color:transparent;"` : "";
+    const dot = r.color ? `<span class="dot" style="background:${r.color}; box-shadow:0 0 8px ${r.color}"></span>` : "";
+    return `<button class="pill-btn${active?" active":""}" data-value="${r.key}"${style}>${dot}${r.label}</button>`;
+  }).join("");
+
+  rarityWrap.querySelectorAll(".pill-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(btn.dataset.value===currentRarityFilter) return;
+      currentRarityFilter = btn.dataset.value;
+      Sound.pillSelect(RARITY_ORDER.indexOf(btn.dataset.value));
+      renderFilterPills();
+      renderIndex();
+    });
+  });
+}
+renderFilterPills();
+
+/* ----- pack filter: dropdown ----- */
+
+const packDropdown        = document.getElementById("packDropdown");
+const packDropdownTrigger = document.getElementById("packDropdownTrigger");
+const packDropdownLabel   = document.getElementById("packDropdownLabel");
+const packDropdownPanel   = document.getElementById("packDropdownPanel");
+
+function renderPackDropdown(){
+  const options = [{ id:"all", name:"All packs" }, ...PACKS];
+  const current = options.find(p=>p.id===currentPackFilter) || options[0];
+  packDropdownLabel.textContent = current.name;
+
+  packDropdownPanel.innerHTML = options.map(p=>{
+    const active = currentPackFilter===p.id;
+    return `<button class="dropdown-option${active?" active":""}" data-value="${p.id}" role="option" aria-selected="${active}">${p.name}<span class="check">✓</span></button>`;
+  }).join("");
+
+  packDropdownPanel.querySelectorAll(".dropdown-option").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(btn.dataset.value!==currentPackFilter){
+        currentPackFilter = btn.dataset.value;
+        Sound.pillSelect();
+        renderPackDropdown();
+        renderIndex();
+      }
+      closePackDropdown();
+    });
+  });
+}
+function openPackDropdown(){
+  packDropdownTrigger.classList.add("open");
+  packDropdownTrigger.setAttribute("aria-expanded","true");
+  packDropdownPanel.classList.add("show");
+}
+function closePackDropdown(){
+  packDropdownTrigger.classList.remove("open");
+  packDropdownTrigger.setAttribute("aria-expanded","false");
+  packDropdownPanel.classList.remove("show");
+}
+packDropdownTrigger.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  Sound.click();
+  if(packDropdownPanel.classList.contains("show")) closePackDropdown(); else openPackDropdown();
+});
+document.addEventListener("click", (e)=>{
+  if(!packDropdown.contains(e.target)) closePackDropdown();
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.key==="Escape") closePackDropdown();
+});
+renderPackDropdown();
+
+/* ----- sort control ----- */
+
+function renderSortSeg(){
+  const wrap = document.getElementById("sortSeg");
+  const options = [{ key:"rarity", label:"Rarity" }, { key:"number", label:"Number" }];
+  wrap.innerHTML = options.map(o=>{
+    const active = currentSort===o.key;
+    return `<button class="sort-seg-btn${active?" active":""}" data-value="${o.key}">${o.label}</button>`;
+  }).join("");
+  wrap.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(btn.dataset.value===currentSort) return;
+      currentSort = btn.dataset.value;
+      Sound.pillSelect();
+      renderSortSeg();
+      renderIndex();
+    });
+  });
+}
+renderSortSeg();
+
+function renderIndex(){
+  const packFilter = currentPackFilter;
+  const rarityFilter = currentRarityFilter;
+
+  let list = CHARACTERS.slice();
+  if(packFilter!=="all") list = list.filter(c=>c.packId===packFilter);
+  if(rarityFilter!=="all") list = list.filter(c=>c.rarity===rarityFilter);
+
+  if(currentSort==="number"){
+    list.sort((a,b)=> a.num - b.num);
+  } else {
+    list.sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
+  }
+
+  const grid = document.getElementById("indexGrid");
+  if(list.length===0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="big">🔍</div><div>Nothing matches these filters.</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map((c,i)=>{
+    const owned = (inventory[c.id]||0) > 0;
+    const r = RARITIES[c.rarity];
+    if(owned){
+      return `<div class="char-tile clickable"${tileDelay(i)} data-id="${c.id}">
+        <div class="num-tag">${formatNum(c.num)}</div>
+        <div class="char-visual" data-visual="${c.id}">
+          <img alt=""><div class="fallback"></div>
+        </div>
+        <div class="cname">${c.name}</div>
+        <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
+      </div>`;
+    }
+    return `<div class="char-tile locked"${tileDelay(i)}>
+      <div class="num-tag">${formatNum(c.num)}</div>
+      <div class="char-visual">
+        <div class="fallback lock-icon" style="display:flex">❓</div>
+      </div>
+      <div class="cname">???</div>
+      <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
+    </div>`;
+  }).join("");
+
+  list.filter(c=>(inventory[c.id]||0)>0).forEach(c=>{
+    const container = grid.querySelector(`[data-visual="${c.id}"]`);
+    if(container) wireVisual(container, c);
+  });
+
+  grid.querySelectorAll(".char-tile:not(.locked)").forEach(tile=>{
+    tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id); });
+  });
+}
+
+/* ======================= PREVIEW MODAL ======================= */
+
+function openPreview(id){
+  const c = charById(id);
+  if(!c) return;
+  const r = RARITIES[c.rarity];
+  document.getElementById("previewName").textContent = c.name;
+  document.getElementById("previewNum").textContent = formatNum(c.num);
+  const rp = document.getElementById("previewRarity");
+  rp.textContent = r.label;
+  rp.style.background = `linear-gradient(120deg, ${r.color}, ${r.color2})`;
+  document.getElementById("previewOwned").textContent = `Owned x${inventory[c.id]||0}`;
+  wireVisual(document.getElementById("previewVisual"), c);
+  document.getElementById("previewModal").classList.add("show");
+}
+document.getElementById("previewClose").addEventListener("click", closePreview);
+document.getElementById("previewModal").addEventListener("click", e=>{
+  if(e.target.id==="previewModal") closePreview();
+});
+function closePreview(){ document.getElementById("previewModal").classList.remove("show"); }
+
+/* ======================= PACK CONTENTS INFO MODAL ======================= */
+
+function openPackInfo(packId){
+  const pack = PACKS.find(p=>p.id===packId);
+  if(!pack) return;
+  const chars = CHARACTERS.filter(c=>c.packId===packId)
+    .sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
+
+  document.getElementById("packInfoTitle").textContent = pack.name;
+
+  const grid = document.getElementById("packInfoGrid");
+  grid.innerHTML = chars.map((c,i)=>{
+    const r = RARITIES[c.rarity];
+    const owned = (inventory[c.id]||0) > 0;
+    if(owned){
+      return `<div class="char-tile"${tileDelay(i)} data-info-visual="${c.id}">
+        <div class="num-tag">${formatNum(c.num)}</div>
+        <div class="char-visual" data-visual="${c.id}">
+          <img alt=""><div class="fallback"></div>
+        </div>
+        <div class="cname">${c.name}</div>
+        <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
+      </div>`;
+    }
+    return `<div class="char-tile locked"${tileDelay(i)}>
+      <div class="num-tag">${formatNum(c.num)}</div>
+      <div class="char-visual">
+        <div class="fallback lock-icon" style="display:flex">❓</div>
+      </div>
+      <div class="cname">???</div>
+      <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
+    </div>`;
+  }).join("");
+
+  chars.filter(c=>(inventory[c.id]||0)>0).forEach(c=>{
+    const container = grid.querySelector(`[data-visual="${c.id}"]`);
+    if(container) wireVisual(container, c);
+  });
+
+  document.getElementById("packInfoModal").classList.add("show");
+}
+document.getElementById("packInfoClose").addEventListener("click", closePackInfo);
+document.getElementById("packInfoModal").addEventListener("click", e=>{
+  if(e.target.id==="packInfoModal") closePackInfo();
+});
+function closePackInfo(){ document.getElementById("packInfoModal").classList.remove("show"); }
+
+/* ======================= PACK OPENING LOGIC ======================= */
+
+function pickRarity(){
+  const totalWeight = RARITY_ORDER.reduce((s,k)=>s+RARITIES[k].weight,0);
+  let roll = Math.random() * totalWeight;
+  for(const key of RARITY_ORDER){
+    roll -= RARITIES[key].weight;
+    if(roll <= 0) return key;
+  }
+  return RARITY_ORDER[0];
+}
+
+function pickCharacter(packId, rarity){
+  const inPack = CHARACTERS.filter(c=>c.packId===packId);
+  let pool = inPack.filter(c=>c.rarity===rarity);
+  if(pool.length===0){
+    // fall back to the closest lower rarity that has characters, for forward-compatibility
+    const idx = RARITY_ORDER.indexOf(rarity);
+    for(let i=idx-1;i>=0;i--){
+      pool = inPack.filter(c=>c.rarity===RARITY_ORDER[i]);
+      if(pool.length>0) break;
+    }
+  }
+  if(pool.length===0) pool = inPack; // ultimate fallback
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+const overlay      = document.getElementById("openingOverlay");
+const openingPack   = document.getElementById("openingPack");
+const statusText    = document.getElementById("statusText");
+const revealCard    = document.getElementById("revealCard");
+const revealVisual  = document.getElementById("revealVisual");
+const revealNum     = document.getElementById("revealNum");
+const revealName    = document.getElementById("revealName");
+const revealRarity  = document.getElementById("revealRarity");
+const claimBtn      = document.getElementById("claimBtn");
+const burstFlash    = document.getElementById("burstFlash");
+const raysEl        = document.getElementById("rays");
+const orbitWrap     = document.getElementById("orbitWrap");
+const legendBanner  = document.getElementById("legendBanner");
+
+let pendingCharacter = null;
+let pendingRarity = null;
+let extraTimers = [];
+
+function clearExtraTimers(){
+  extraTimers.forEach(t=>clearTimeout(t));
+  extraTimers = [];
+}
+
+function resetOverlayVisuals(){
+  openingPack.style.display = "flex";
+  openingPack.className = "opening-pack charging";
+  revealCard.style.display = "none";
+  revealCard.className = "reveal-card";
+  claimBtn.classList.remove("show");
+  burstFlash.className = "burst-flash";
+  raysEl.className = "rays";
+  legendBanner.className = "legend-banner";
+  legendBanner.textContent = "";
+  orbitWrap.innerHTML = "";
+  overlay.classList.remove("shake","shake-hard");
+  statusText.textContent = "Opening...";
+  statusText.classList.remove("glitch-text");
+}
+
+function scheduleHeartbeats(chargeTime){
+  const interval = 220;
+  for(let elapsed=0; elapsed<chargeTime; elapsed+=interval){
+    const t = setTimeout(()=>Sound.heartbeatTick(), elapsed);
+    extraTimers.push(t);
+  }
+}
+
+function startPackOpening(packId){
+  document.querySelectorAll(".pack-open-btn").forEach(b=>b.disabled = true);
+  resetOverlayVisuals();
+
+  const pack = PACKS.find(p=>p.id===packId) || PACKS[0];
+  openingPack.style.setProperty("--pack-color", pack.color);
+  openingPack.style.setProperty("--pack-color2", pack.color2);
+
+  overlay.classList.add("show");
+
+  pendingRarity = pickRarity();
+  pendingCharacter = pickCharacter(pack.id, pendingRarity);
+  // If there was no character at the rolled rarity yet, pickCharacter fell back
+  // to the closest lower rarity that actually has characters. Make sure the
+  // displayed rarity (label, colors, confetti, charge duration) matches the
+  // character we're actually giving out — never show "Epic" for a character
+  // that's really Uncommon.
+  pendingRarity = pendingCharacter.rarity;
+
+  const rarityInfo = RARITIES[pendingRarity];
+  openingPack.classList.add("rarity-"+pendingRarity);
+
+  // Phase timings: ~35% charging, then burst + reveal for the remainder.
+  const total = rarityInfo.duration;
+  const chargeTime = Math.min(1200, total*0.3);
+
+  scheduleHeartbeats(chargeTime);
+
+  const urgentAt = Math.max(0, chargeTime - Math.min(500, chargeTime*0.45));
+  const tUrgent = setTimeout(()=> openingPack.classList.add("urgent"), urgentAt);
+  extraTimers.push(tUrgent);
+
+  const t1 = setTimeout(()=> triggerBurst(pendingRarity, total, chargeTime), chargeTime);
+  extraTimers.push(t1);
+}
+
+function triggerBurst(rarity, total, chargeTime){
+  // universal burst flash
+  burstFlash.classList.add("go");
+  openingPack.classList.remove("charging");
+  openingPack.classList.add("bursting");
+  statusText.textContent = "Here we go...";
+  Sound.burst();
+
+  const remaining = total - chargeTime;
+
+  const t2 = setTimeout(()=> showReveal(rarity, remaining), 480);
+  extraTimers.push(t2);
+}
+
+function showReveal(rarity, remaining){
+  openingPack.style.display = "none";
+  const info = RARITIES[rarity];
+  revealCard.style.display = "block";
+  revealCard.className = "reveal-card rarity-"+rarity+" enter";
+  wireVisual(revealVisual, pendingCharacter);
+  revealNum.textContent = formatNum(pendingCharacter.num);
+  revealName.textContent = pendingCharacter.name;
+  revealRarity.textContent = info.label;
+  statusText.textContent = "";
+  Sound.fanfare(rarity);
+
+  runRarityFlair(rarity, remaining);
+
+  const tEnd = setTimeout(()=>{
+    claimBtn.classList.add("show");
+  }, Math.max(remaining-200, 300));
+  extraTimers.push(tEnd);
+}
+
+function spawnOrbiters(count, colors, radius){
+  orbitWrap.innerHTML = "";
+  orbitWrap.style.width = (radius*2+40)+"px";
+  orbitWrap.style.height = (radius*2+40)+"px";
+  for(let i=0;i<count;i++){
+    const dot = document.createElement("div");
+    dot.className = "orbiter spin";
+    dot.style.background = colors[i%colors.length];
+    dot.style.boxShadow = "0 0 12px "+colors[i%colors.length];
+    dot.style.animationDuration = (2.2 + (i%3)*0.6)+"s";
+    dot.style.animationDelay = (-(i*0.3))+"s";
+    dot.style.setProperty("--radius", radius+"px");
+    orbitWrap.appendChild(dot);
+  }
+}
+
+function runRarityFlair(rarity, remaining){
+  const info = RARITIES[rarity];
+  const rect = overlay.getBoundingClientRect();
+  const cx = rect.width/2, cy = rect.height/2;
+
+  switch(rarity){
+    case "common":
+      burstConfetti({ colors:[info.color, "#ffffff"], count:60, spread:60, power:9 });
+      break;
+    case "uncommon":
+      burstConfetti({ colors:[info.color, info.color2, "#ffffff"], count:90, spread:70, power:10 });
+      break;
+    case "rare":
+      raysEl.classList.add("spin");
+      burstConfetti({ colors:[info.color, info.color2, "#ffffff"], count:120, spread:80, power:11 });
+      overlay.classList.add("shake");
+      break;
+    case "epic":
+      raysEl.classList.add("spin");
+      spawnOrbiters(8, [info.color, info.color2, "#ffffff"], 110);
+      burstConfetti({ colors:[info.color, info.color2, "#ffffff"], count:150, spread:90, power:12 });
+      overlay.classList.add("shake");
+      break;
+    case "legendary":
+      raysEl.classList.add("spin");
+      spawnOrbiters(10, [info.color, info.color2, "#fff5cc"], 130);
+      legendBanner.textContent = "Legendary Pull!";
+      legendBanner.classList.add("go");
+      overlay.classList.add("shake");
+      burstConfetti({ colors:[info.color, info.color2, "#fff8dc"], count:200, spread:100, power:13 });
+      extraTimers.push(setTimeout(()=>burstConfetti({ colors:[info.color, "#fff"], count:120, spread:100, power:12 }), 900));
+      break;
+    case "mythic":
+      raysEl.classList.add("spin");
+      spawnOrbiters(14, [info.color, info.color2, "#fff"], 150);
+      legendBanner.textContent = "Mythic Pull!!";
+      legendBanner.classList.add("go");
+      burstConfetti({ colors:[info.color, info.color2, "#fff", "#ffd23f"], count:160, spread:110, power:12 });
+      extraTimers.push(setTimeout(()=>{ overlay.classList.add("shake"); burstConfetti({ colors:[info.color, info.color2, "#7ed957", "#ffd23f"], count:220, spread:130, power:14 }); Sound.fanfare("mythic"); }, 1600));
+      extraTimers.push(setTimeout(()=>{ burstConfetti({ colors:["#fff", info.color, info.color2], count:260, spread:140, power:15 }); Sound.fanfare("mythic"); }, 3400));
+      break;
+    case "bumhole":
+      raysEl.classList.add("spin");
+      spawnOrbiters(20, [info.color, info.color2, "#ffd23f", "#7ed957", "#ff4fa3"], 170);
+      legendBanner.textContent = "💩 BUMHOLE 💩";
+      legendBanner.classList.add("go");
+      statusText.classList.add("glitch-text");
+      overlay.classList.add("shake-hard");
+      burstConfetti({ colors:[info.color, info.color2, "#ffd23f"], count:180, spread:120, power:13 });
+      // escalating gag bursts across the very long duration
+      [1500,3200,5000,6800,8600,10200,11500].forEach((delay,i)=>{
+        extraTimers.push(setTimeout(()=>{
+          burstConfetti({ colors:["#ffd23f","#7ed957","#ff4fa3","#3acbff", info.color], count:180+i*20, spread:120+i*5, power:13+i });
+          Sound.honk(i);
+        }, delay));
+      });
+      extraTimers.push(setTimeout(()=>{ overlay.classList.remove("shake-hard"); overlay.classList.add("shake"); }, remaining-1500));
+      break;
+  }
+}
+
+claimBtn.addEventListener("click", claimCharacter);
+
+function claimCharacter(){
+  if(!pendingCharacter) return;
+  Sound.claim();
+  const id = pendingCharacter.id;
+  const wasNew = !(inventory[id] > 0);
+  inventory[id] = (inventory[id]||0) + 1;
+  persistInventory();
+  if(wasNew){
+    if(!newIds.includes(id)) newIds.push(id);
+    persistNewIds();
+    updateBadgeUI();
+  }
+
+  closeOverlay();
+  renderInventory();
+  renderIndex();
+}
+
+function closeOverlay(){
+  clearExtraTimers();
+  overlay.classList.remove("show");
+  document.querySelectorAll(".pack-open-btn").forEach(b=>b.disabled = false);
+  pendingCharacter = null;
+  pendingRarity = null;
+}
+
+/* ======================= CONFETTI ENGINE ======================= */
+
+const confettiCanvas = document.getElementById("confettiCanvas");
+const ctx = confettiCanvas.getContext("2d");
+let confettiParticles = [];
+let confettiRunning = false;
+
+function resizeCanvas(){
+  confettiCanvas.width = window.innerWidth;
+  confettiCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function burstConfetti({colors, count, spread, power}){
+  const cx = confettiCanvas.width/2;
+  const cy = confettiCanvas.height*0.42;
+  for(let i=0;i<count;i++){
+    const angle = (Math.random()*Math.PI*2);
+    const dist = Math.random()*spread*0.02 + 0.4;
+    const speed = (Math.random()*power*0.6 + power*0.5);
+    confettiParticles.push({
+      x:cx, y:cy,
+      vx: Math.cos(angle)*speed*dist,
+      vy: Math.sin(angle)*speed*dist - power*0.4,
+      size: Math.random()*7+4,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      rot: Math.random()*Math.PI*2,
+      vr: (Math.random()-0.5)*0.3,
+      life: 0,
+      maxLife: 90+Math.random()*50,
+      shape: Math.random()<0.5 ? "rect" : "circle"
+    });
+  }
+  if(!confettiRunning){ confettiRunning = true; requestAnimationFrame(confettiLoop); }
+}
+
+function confettiLoop(){
+  ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+  const gravity = 0.22;
+  confettiParticles.forEach(p=>{
+    p.vy += gravity;
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vx *= 0.992;
+    p.rot += p.vr;
+    p.life++;
+    const alpha = Math.max(0, 1 - p.life/p.maxLife);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    if(p.shape==="rect"){
+      ctx.fillRect(-p.size/2, -p.size/2*0.6, p.size, p.size*0.6);
+    } else {
+      ctx.beginPath();
+      ctx.arc(0,0,p.size/2,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  });
+  confettiParticles = confettiParticles.filter(p=>p.life < p.maxLife && p.y < confettiCanvas.height+40);
+  if(confettiParticles.length>0){
+    requestAnimationFrame(confettiLoop);
+  } else {
+    confettiRunning = false;
+    ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
+  }
+}
+
+/* ======================= INIT ======================= */
+
+renderInventory();
+renderIndex();
+
+})();
+</script>
+</body>
+</html>
