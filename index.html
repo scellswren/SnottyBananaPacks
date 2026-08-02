@@ -875,9 +875,15 @@ const PACKS = [
 // a new character, always give it the NEXT number after the current highest
 // (e.g. the 4th character ever added gets num:4, the 5th gets num:5, etc).
 const CHARACTERS = [
-  { id:"orin",         name:"Orin",         rarity:"common",   packId:"orin-pack", image:"Orin.jpg",        num:1 },
-  { id:"farmer-orin",  name:"Farmer Orin",  rarity:"common",   packId:"orin-pack", image:"FarmerOrin.jpg",  num:2 },
-  { id:"chubby-orin",  name:"Chubby Orin",  rarity:"uncommon", packId:"orin-pack", image:"ChubbyOrin.jpg", num:3 },
+  { id:"orin",              name:"Orin",              rarity:"common",   packId:"orin-pack", image:"Orin.jpg",             num:1 },
+  { id:"farmer-orin",       name:"Farmer Orin",       rarity:"common",   packId:"orin-pack", image:"FarmerOrin.jpg",       num:2 },
+  { id:"chubby-orin",       name:"Chubby Orin",       rarity:"uncommon", packId:"orin-pack", image:"ChubbyOrin.jpg",       num:3 },
+  { id:"vietnamese-orin",   name:"Vietnamese Orin",   rarity:"rare",     packId:"orin-pack", image:"VietnameseOrin.jpg",   num:4 },
+  { id:"bald-orin",         name:"Bald Orin",         rarity:"uncommon", packId:"orin-pack", image:"BaldOrin.jpg",         num:5 },
+  { id:"astronaut-orin",    name:"Astronaut Orin",    rarity:"epic",     packId:"orin-pack", image:"AstronautOrin.jpg",    num:6 },
+  { id:"lakers-orin",       name:"Lakers Orin",       rarity:"uncommon", packId:"orin-pack", image:"LakersOrin.jpg",       num:7 },
+  { id:"charlie-kirk-orin", name:"Charlie Kirk Orin", rarity:"mythic",   packId:"orin-pack", image:"CharlieKirkOrin.jpg",  num:8 },
+  { id:"ipad-kid-orin",     name:"Ipad Kid Orin",     rarity:"epic",     packId:"orin-pack", image:"IpadKidOrin.jpg",      num:9 },
 ];
 
 const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
