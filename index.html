@@ -441,12 +441,52 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   to{ opacity:.55; transform:translateY(0) scale(1); }
 }
 .char-tile.locked:hover{ transform:none; }
+
+/* ----- rarity outlines for owned tiles ----- */
+
+.char-tile.rarity-legendary{
+  border-color:var(--c-legendary);
+  animation:tileIn .5s cubic-bezier(.2,1,.3,1) forwards, legendaryGlow 2.2s ease-in-out infinite .5s;
+  animation-delay:var(--tile-delay, 0ms), calc(var(--tile-delay, 0ms) + .5s);
+}
+@keyframes legendaryGlow{
+  0%,100%{ box-shadow:0 0 0 1px var(--c-legendary), 0 0 14px rgba(255,201,60,.32); }
+  50%{ box-shadow:0 0 0 1px var(--c-legendary-2), 0 0 28px rgba(255,201,60,.62); }
+}
+
+.char-tile.rarity-mythic{ border-color:transparent; }
+.char-tile.rarity-mythic::before{
+  content:''; position:absolute; inset:0; border-radius:inherit; padding:2px;
+  background:conic-gradient(from 0deg, #ff6ec7, #ffd23c, #6effa1, #5ae2ff, #b06eff, #ff6ec7);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  animation:rainbowShift 2.6s linear infinite;
+  pointer-events:none; z-index:2;
+}
+@keyframes rainbowShift{ 0%{ filter:hue-rotate(0deg); } 100%{ filter:hue-rotate(360deg); } }
+
+.char-tile.rarity-bumhole{
+  border-color:var(--c-bumhole);
+  overflow:visible;
+  animation:tileIn .5s cubic-bezier(.2,1,.3,1) forwards, bumholeWobble 2s ease-in-out infinite .5s;
+  animation-delay:var(--tile-delay, 0ms), calc(var(--tile-delay, 0ms) + .5s);
+}
+@keyframes bumholeWobble{
+  0%,100%{ box-shadow:0 0 0 2px var(--c-bumhole), 0 0 14px rgba(121,78,35,.38); }
+  50%{ box-shadow:0 0 0 2px var(--c-bumhole-2), 0 0 26px rgba(121,78,35,.62); }
+}
+.char-tile.rarity-bumhole::after{
+  content:'💩'; position:absolute; top:-9px; right:-7px; font-size:19px; z-index:3;
+  filter:drop-shadow(0 2px 5px rgba(0,0,0,.45)); transform:rotate(10deg);
+  animation:poopWiggle 1.7s ease-in-out infinite;
+}
+@keyframes poopWiggle{ 0%,100%{ transform:rotate(8deg) scale(1); } 50%{ transform:rotate(-8deg) scale(1.1); } }
 .char-visual{
   width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden; margin-bottom:10px;
   display:flex; align-items:center; justify-content:center; position:relative;
   background:var(--surface-2);
 }
-.char-visual img{ width:100%; height:100%; object-fit:cover; display:block; }
+.char-visual img{ width:100%; height:100%; object-fit:cover; display:block; opacity:0; transition:opacity .18s ease; }
 .char-visual .fallback{
   width:100%; height:100%; display:none; align-items:center; justify-content:center;
   font-size:44px; font-family:var(--font-display); font-weight:800; color:#241a00;
@@ -493,7 +533,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   background:var(--surface-2); display:flex; align-items:center; justify-content:center;
   box-shadow:0 10px 30px rgba(0,0,0,.3);
 }
-.preview-visual img{ width:100%; height:100%; object-fit:cover; }
+.preview-visual img{ width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .18s ease; }
 .preview-visual .fallback{ font-size:70px; font-family:var(--font-display); font-weight:800; color:#241a00; display:none; align-items:center; justify-content:center; width:100%; height:100%; }
 .preview-visual.show-fallback img{ display:none; }
 .preview-visual.show-fallback .fallback{ display:flex; }
@@ -589,7 +629,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   width:190px; height:190px; margin:0 auto 16px; border-radius:22px; overflow:hidden;
   display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.2);
 }
-.reveal-visual img{ width:100%; height:100%; object-fit:cover; }
+.reveal-visual img{ width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .18s ease; }
 .reveal-visual .fallback{ font-size:64px; font-family:var(--font-display); font-weight:800; color:#241a00; width:100%; height:100%; display:none; align-items:center; justify-content:center; }
 .reveal-visual.show-fallback img{ display:none; }
 .reveal-visual.show-fallback .fallback{ display:flex; }
@@ -624,8 +664,29 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .reveal-card.rarity-rare{ background:linear-gradient(160deg, var(--c-rare), var(--c-rare-2)); }
 .reveal-card.rarity-epic{ background:linear-gradient(160deg, var(--c-epic), var(--c-epic-2)); }
 .reveal-card.rarity-legendary{ background:linear-gradient(160deg, var(--c-legendary), var(--c-legendary-2)); }
-.reveal-card.rarity-mythic{ background:linear-gradient(135deg, var(--c-mythic), var(--c-mythic-2), var(--c-mythic)); background-size:300% 300%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 2.4s linear infinite 0.7s; }
-.reveal-card.rarity-bumhole{ background:linear-gradient(135deg, var(--c-bumhole), var(--c-bumhole-2), #d9b45c, var(--c-bumhole-2)); background-size:400% 400%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 1.6s linear infinite 0.7s; }
+.reveal-card.rarity-mythic{ background:linear-gradient(135deg, var(--c-mythic), var(--c-mythic-2), var(--c-mythic)); background-size:300% 300%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 2.4s linear infinite 0.7s, mythicRing 2.6s linear infinite 0.7s; }
+.reveal-card.rarity-bumhole{ background:linear-gradient(135deg, var(--c-bumhole), var(--c-bumhole-2), #d9b45c, var(--c-bumhole-2)); background-size:400% 400%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 1.6s linear infinite 0.7s, bumholeWobbleCard 2s ease-in-out infinite 0.7s; position:relative; }
+.reveal-card.rarity-bumhole::after{
+  content:'💩'; position:absolute; top:-16px; right:-10px; font-size:32px; z-index:5;
+  filter:drop-shadow(0 3px 7px rgba(0,0,0,.5)); animation:poopWiggle 1.7s ease-in-out infinite;
+}
+@keyframes bumholeWobbleCard{
+  0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole), 0 0 26px rgba(121,78,35,.4); }
+  50%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole-2), 0 0 44px rgba(121,78,35,.7); }
+}
+.reveal-card.rarity-legendary{ animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, legendaryGlowCard 2.2s ease-in-out infinite 0.7s; }
+@keyframes legendaryGlowCard{
+  0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-legendary), 0 0 26px rgba(255,201,60,.4); }
+  50%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-legendary-2), 0 0 44px rgba(255,201,60,.7); }
+}
+@keyframes mythicRing{
+  0%{ box-shadow:var(--shadow-lg), 0 0 0 3px #ff6ec7, 0 0 34px rgba(255,110,199,.5); }
+  20%{ box-shadow:var(--shadow-lg), 0 0 0 3px #ffd23c, 0 0 34px rgba(255,210,60,.5); }
+  40%{ box-shadow:var(--shadow-lg), 0 0 0 3px #6effa1, 0 0 34px rgba(110,255,161,.5); }
+  60%{ box-shadow:var(--shadow-lg), 0 0 0 3px #5ae2ff, 0 0 34px rgba(90,226,255,.5); }
+  80%{ box-shadow:var(--shadow-lg), 0 0 0 3px #b06eff, 0 0 34px rgba(176,110,255,.5); }
+  100%{ box-shadow:var(--shadow-lg), 0 0 0 3px #ff6ec7, 0 0 34px rgba(255,110,199,.5); }
+}
 @keyframes holoShift{ 0%{ background-position:0% 50%; } 100%{ background-position:100% 50%; } }
 
 /* extra flair layers, toggled by JS adding classes to overlay */
@@ -1112,6 +1173,15 @@ function wireVisual(container, character){
   container.classList.remove("show-fallback");
   fb.textContent = initials(character.name);
   fb.style.background = `linear-gradient(155deg, ${RARITIES[character.rarity].color}, ${RARITIES[character.rarity].color2})`;
+
+  // revealVisual / previewVisual are persistent containers reused across
+  // many characters — without this, the browser keeps showing the PREVIOUS
+  // character's image on screen while the new one downloads for the first
+  // time, which looks like "the wrong character for a second". Hide + clear
+  // immediately so nothing stale can ever be visible.
+  img.style.opacity = "0";
+  img.removeAttribute("src");
+
   img.onerror = ()=>{
     container.classList.add("show-fallback");
     console.error("[SnottyBananaPacks] Image failed to load for \"" + character.name + "\". Tried this exact URL:", character.image);
@@ -1130,6 +1200,7 @@ function wireVisual(container, character){
   img.onload = ()=>{
     // loaded fine — make sure we're not stuck showing the fallback from a previous attempt
     container.classList.remove("show-fallback");
+    img.style.opacity = "1";
   };
   img.src = character.image;
   img.alt = character.name;
@@ -1218,7 +1289,7 @@ function renderInventory(){
 
   grid.innerHTML = sorted.map((c,i)=>{
     const r = RARITIES[c.rarity];
-    return `<div class="char-tile clickable"${tileDelay(i)} data-id="${c.id}">
+    return `<div class="char-tile clickable rarity-${c.rarity}"${tileDelay(i)} data-id="${c.id}">
       <div class="num-tag">${formatNum(c.num)}</div>
       <div class="qty-tag">x${inventory[c.id]}</div>
       <div class="char-visual" data-visual="${c.id}">
@@ -1368,7 +1439,7 @@ function renderIndex(){
     const owned = (inventory[c.id]||0) > 0;
     const r = RARITIES[c.rarity];
     if(owned){
-      return `<div class="char-tile clickable"${tileDelay(i)} data-id="${c.id}">
+      return `<div class="char-tile clickable rarity-${c.rarity}"${tileDelay(i)} data-id="${c.id}">
         <div class="num-tag">${formatNum(c.num)}</div>
         <div class="char-visual" data-visual="${c.id}">
           <img alt=""><div class="fallback"></div>
@@ -1433,7 +1504,7 @@ function openPackInfo(packId){
     const r = RARITIES[c.rarity];
     const owned = (inventory[c.id]||0) > 0;
     if(owned){
-      return `<div class="char-tile"${tileDelay(i)} data-info-visual="${c.id}">
+      return `<div class="char-tile rarity-${c.rarity}"${tileDelay(i)} data-info-visual="${c.id}">
         <div class="num-tag">${formatNum(c.num)}</div>
         <div class="char-visual" data-visual="${c.id}">
           <img alt=""><div class="fallback"></div>
