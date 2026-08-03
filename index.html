@@ -385,6 +385,21 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .sort-seg-btn:hover{ color:var(--text); }
 .sort-seg-btn.active{ background:linear-gradient(120deg, var(--violet), var(--violet-deep)); color:#fff; box-shadow:0 8px 18px rgba(109,40,217,.32); animation:tabPop .35s cubic-bezier(.3,1.6,.5,1); }
 .sort-seg-btn:active{ transform:scale(.94); }
+
+.index-progress{
+  margin-left:auto; font-family:var(--font-body); font-weight:700; font-size:13.5px;
+  color:var(--text-muted); background:var(--surface); border:1px solid var(--border);
+  padding:7px 14px; border-radius:999px; white-space:nowrap;
+}
+.index-progress b{ color:var(--text); }
+.index-search{
+  flex:1 1 180px; min-width:160px; border:1px solid var(--border); background:var(--surface);
+  color:var(--text); font-family:var(--font-body); font-size:14px; font-weight:500;
+  padding:10px 14px; border-radius:14px; outline:none;
+  transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.index-search::placeholder{ color:var(--text-muted); }
+.index-search:focus{ border-color:var(--violet); box-shadow:0 0 0 3px rgba(168,85,247,.16); background:var(--surface-2); }
 .pill-btn{
   border:1px solid var(--border); background:var(--surface); color:var(--text-muted);
   font-weight:700; font-size:13.5px; padding:10px 19px; border-radius:999px;
@@ -394,6 +409,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 }
 .pill-btn:hover{ transform:translateY(-2px); border-color:var(--border-strong); color:var(--text); }
 .pill-btn:active{ transform:translateY(0) scale(.95); }
+.pill-btn:disabled{ opacity:.4; cursor:default; transform:none; }
 .pill-btn.active{
   color:#fff; border-color:transparent;
   box-shadow:0 10px 22px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.25);
@@ -528,15 +544,23 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   position:absolute; top:14px; right:14px; background:var(--surface); border:1px solid var(--border);
   width:34px; height:34px; border-radius:10px; color:var(--text); font-size:16px;
 }
+.preview-visual-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:16px; }
 .preview-visual{
-  width:200px; height:200px; margin:0 auto 16px; border-radius:22px; overflow:hidden;
+  width:200px; height:200px; margin:0; border-radius:22px; overflow:hidden;
   background:var(--surface-2); display:flex; align-items:center; justify-content:center;
-  box-shadow:0 10px 30px rgba(0,0,0,.3);
+  box-shadow:0 10px 30px rgba(0,0,0,.3); flex:0 0 auto;
 }
 .preview-visual img{ width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .18s ease; }
 .preview-visual .fallback{ font-size:70px; font-family:var(--font-display); font-weight:800; color:#241a00; display:none; align-items:center; justify-content:center; width:100%; height:100%; }
 .preview-visual.show-fallback img{ display:none; }
 .preview-visual.show-fallback .fallback{ display:flex; }
+.preview-nav-btn{
+  flex:0 0 auto; width:36px; height:36px; border-radius:10px;
+  background:var(--surface); border:1px solid var(--border); color:var(--text);
+  font-size:18px; font-weight:800; display:flex; align-items:center; justify-content:center;
+}
+.preview-nav-btn:hover{ background:var(--surface-2); }
+.preview-nav-btn:disabled{ opacity:.3; cursor:default; }
 .preview-card h2{ margin:6px 0 8px; font-family:var(--font-display); font-size:23px; }
 .preview-meta{ display:flex; justify-content:center; gap:10px; margin-top:6px; align-items:center; }
 .preview-owned{ margin-top:14px; font-size:13.5px; color:var(--text-muted); font-weight:600; }
@@ -802,9 +826,11 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   <section class="view" id="view-index">
     <div class="section-head">
       <h1>Index</h1>
+      <div class="index-progress" id="indexProgress"></div>
     </div>
     <div class="toolbar">
       <div class="toolbar-row">
+        <input type="text" id="indexSearch" class="index-search" placeholder="Search characters..." autocomplete="off">
         <div class="dropdown" id="packDropdown">
           <button class="dropdown-trigger" id="packDropdownTrigger" type="button" aria-haspopup="listbox" aria-expanded="false">
             <span id="packDropdownLabel">All packs</span>
@@ -814,7 +840,11 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
         </div>
         <div class="sort-seg" id="sortSeg"></div>
       </div>
+      <div class="toolbar-row">
+        <div class="sort-seg" id="ownSeg"></div>
+      </div>
       <div class="pill-row" id="filterRarityPills"></div>
+
     </div>
     <div id="indexGrid" class="grid"></div>
     <div class="odds-card">
@@ -828,9 +858,13 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 <div class="modal-backdrop" id="previewModal">
   <div class="preview-card">
     <button class="close-x" id="previewClose">✕</button>
-    <div class="preview-visual" id="previewVisual">
-      <img alt="">
-      <div class="fallback"></div>
+    <div class="preview-visual-row">
+      <button class="preview-nav-btn" id="previewPrev" type="button" aria-label="Previous character">‹</button>
+      <div class="preview-visual" id="previewVisual">
+        <img alt="">
+        <div class="fallback"></div>
+      </div>
+      <button class="preview-nav-btn" id="previewNext" type="button" aria-label="Next character">›</button>
     </div>
     <h2 id="previewName">—</h2>
     <div class="preview-meta"><span class="preview-num" id="previewNum">#000</span><span class="rarity-pill" id="previewRarity">—</span></div>
@@ -1323,7 +1357,7 @@ function renderInventory(){
   });
 
   grid.querySelectorAll(".char-tile").forEach(tile=>{
-    tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id); });
+    tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id, sorted); });
   });
 }
 
@@ -1332,9 +1366,18 @@ function renderInventory(){
 let currentPackFilter = "all";
 let currentRarityFilter = "all";
 let currentSort = "rarity"; // "rarity" | "number"
+let currentOwnership = "all"; // "all" | "owned" | "missing"
+let currentSearch = "";
+
+function scopedCharacters(){
+  // Characters within the current pack scope only (used for counts/progress,
+  // independent of rarity/ownership/search so those controls can show real totals).
+  return currentPackFilter==="all" ? CHARACTERS : CHARACTERS.filter(c=>c.packId===currentPackFilter);
+}
 
 function renderFilterPills(){
   const rarityWrap = document.getElementById("filterRarityPills");
+  const scoped = scopedCharacters();
 
   const rarityOptions = [{ key:"all", label:"All rarities", color:null }].concat(
     RARITY_ORDER.map(k=>({ key:k, label:RARITIES[k].label, color:RARITIES[k].color, color2:RARITIES[k].color2 }))
@@ -1343,7 +1386,10 @@ function renderFilterPills(){
     const active = currentRarityFilter===r.key;
     const style = active ? ` style="background:linear-gradient(120deg, ${r.color||"var(--violet)"}, ${r.color2||"var(--violet-deep)"}); border-color:transparent;"` : "";
     const dot = r.color ? `<span class="dot" style="background:${r.color}; box-shadow:0 0 8px ${r.color}"></span>` : "";
-    return `<button class="pill-btn${active?" active":""}" data-value="${r.key}"${style}>${dot}${r.label}</button>`;
+    const pool = r.key==="all" ? scoped : scoped.filter(c=>c.rarity===r.key);
+    const ownedCount = pool.filter(c=>(inventory[c.id]||0)>0).length;
+    const countLabel = pool.length ? ` (${ownedCount}/${pool.length})` : "";
+    return `<button class="pill-btn${active?" active":""}" data-value="${r.key}"${style}${pool.length===0?" disabled":""}>${dot}${r.label}${countLabel}</button>`;
   }).join("");
 
   rarityWrap.querySelectorAll(".pill-btn").forEach(btn=>{
@@ -1379,8 +1425,11 @@ function renderPackDropdown(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value!==currentPackFilter){
         currentPackFilter = btn.dataset.value;
+        // switching pack scope can invalidate the current rarity filter's relevance; keep it,
+        // but refresh pills so counts reflect the new scope.
         Sound.pillSelect();
         renderPackDropdown();
+        renderFilterPills();
         renderIndex();
       }
       closePackDropdown();
@@ -1431,19 +1480,69 @@ function renderSortSeg(){
 }
 renderSortSeg();
 
+/* ----- ownership control ----- */
+
+function renderOwnSeg(){
+  const wrap = document.getElementById("ownSeg");
+  const scoped = scopedCharacters();
+  const ownedCount = scoped.filter(c=>(inventory[c.id]||0)>0).length;
+  const missingCount = scoped.length - ownedCount;
+  const options = [
+    { key:"all",     label:`All (${scoped.length})` },
+    { key:"owned",   label:`Owned (${ownedCount})` },
+    { key:"missing", label:`Missing (${missingCount})` },
+  ];
+  wrap.innerHTML = options.map(o=>{
+    const active = currentOwnership===o.key;
+    return `<button class="sort-seg-btn${active?" active":""}" data-value="${o.key}">${o.label}</button>`;
+  }).join("");
+  wrap.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(btn.dataset.value===currentOwnership) return;
+      currentOwnership = btn.dataset.value;
+      Sound.pillSelect();
+      renderOwnSeg();
+      renderIndex();
+    });
+  });
+}
+renderOwnSeg();
+
+/* ----- search control ----- */
+
+const indexSearchInput = document.getElementById("indexSearch");
+indexSearchInput.addEventListener("input", ()=>{
+  currentSearch = indexSearchInput.value.trim().toLowerCase();
+  renderIndex();
+});
+
 function renderIndex(){
-  const packFilter = currentPackFilter;
   const rarityFilter = currentRarityFilter;
 
-  let list = CHARACTERS.slice();
-  if(packFilter!=="all") list = list.filter(c=>c.packId===packFilter);
+  let list = scopedCharacters();
   if(rarityFilter!=="all") list = list.filter(c=>c.rarity===rarityFilter);
+  if(currentOwnership==="owned") list = list.filter(c=>(inventory[c.id]||0)>0);
+  if(currentOwnership==="missing") list = list.filter(c=>!(inventory[c.id]>0));
+  if(currentSearch){
+    list = list.filter(c=>{
+      // matching a locked character by name would leak its identity, so
+      // unrevealed characters can only be found by their dex number.
+      const owned = (inventory[c.id]||0) > 0;
+      const haystack = owned ? (c.name+" "+formatNum(c.num)) : formatNum(c.num);
+      return haystack.toLowerCase().includes(currentSearch);
+    });
+  }
 
   if(currentSort==="number"){
     list.sort((a,b)=> a.num - b.num);
   } else {
     list.sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
   }
+
+  const scoped = scopedCharacters();
+  const totalOwned = scoped.filter(c=>(inventory[c.id]||0)>0).length;
+  const pct = scoped.length ? Math.round((totalOwned/scoped.length)*100) : 0;
+  document.getElementById("indexProgress").innerHTML = `<b>${totalOwned}/${scoped.length}</b> collected · ${pct}%`;
 
   const grid = document.getElementById("indexGrid");
   if(list.length===0){
@@ -1479,16 +1578,29 @@ function renderIndex(){
     if(container) wireVisual(container, c);
   });
 
+  const ownedList = list.filter(c=>(inventory[c.id]||0)>0);
   grid.querySelectorAll(".char-tile:not(.locked)").forEach(tile=>{
-    tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id); });
+    tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id, ownedList); });
   });
 }
 
 /* ======================= PREVIEW MODAL ======================= */
 
-function openPreview(id){
-  const c = charById(id);
-  if(!c) return;
+let previewList = [];
+let previewIdx = -1;
+
+function openPreview(id, list){
+  const source = (list && list.length) ? list : CHARACTERS.filter(c=>(inventory[c.id]||0)>0);
+  previewList = source;
+  const idx = previewList.findIndex(c=>c.id===id);
+  renderPreviewAt(idx>=0 ? idx : 0);
+  document.getElementById("previewModal").classList.add("show");
+}
+
+function renderPreviewAt(idx){
+  if(!previewList.length) return;
+  previewIdx = ((idx % previewList.length) + previewList.length) % previewList.length;
+  const c = previewList[previewIdx];
   const r = RARITIES[c.rarity];
   document.getElementById("previewName").textContent = c.name;
   document.getElementById("previewNum").textContent = formatNum(c.num);
@@ -1497,11 +1609,30 @@ function openPreview(id){
   rp.style.background = `linear-gradient(120deg, ${r.color}, ${r.color2})`;
   document.getElementById("previewOwned").textContent = `Owned x${inventory[c.id]||0}`;
   wireVisual(document.getElementById("previewVisual"), c);
-  document.getElementById("previewModal").classList.add("show");
+  const single = previewList.length<=1;
+  document.getElementById("previewPrev").disabled = single;
+  document.getElementById("previewNext").disabled = single;
 }
+
+document.getElementById("previewPrev").addEventListener("click", ()=>{
+  if(previewList.length<2) return;
+  Sound.click();
+  renderPreviewAt(previewIdx-1);
+});
+document.getElementById("previewNext").addEventListener("click", ()=>{
+  if(previewList.length<2) return;
+  Sound.click();
+  renderPreviewAt(previewIdx+1);
+});
 document.getElementById("previewClose").addEventListener("click", closePreview);
 document.getElementById("previewModal").addEventListener("click", e=>{
   if(e.target.id==="previewModal") closePreview();
+});
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("previewModal").classList.contains("show")) return;
+  if(e.key==="ArrowLeft") renderPreviewAt(previewIdx-1);
+  if(e.key==="ArrowRight") renderPreviewAt(previewIdx+1);
+  if(e.key==="Escape") closePreview();
 });
 function closePreview(){ document.getElementById("previewModal").classList.remove("show"); }
 
