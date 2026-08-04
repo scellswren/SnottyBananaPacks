@@ -316,6 +316,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 }
 .pack-info-btn:hover{ background:rgba(255,255,255,.42); transform:scale(1.1); }
 .pack-info-btn:active{ transform:scale(.9); }
+.pack-info-btn:disabled{ opacity:.5; cursor:not-allowed; transform:none; }
 
 .odds-card{
   background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
@@ -1211,7 +1212,7 @@ tabButtons.forEach(btn=>{
     document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
     document.getElementById("view-"+view).classList.add("active");
     if(view==="inventory"){ clearNewBadge(); renderInventory(); }
-    if(view==="index"){ renderIndex(); }
+    if(view==="index"){ renderFilterPills(); renderOwnSeg(); renderIndex(); }
   });
 });
 
@@ -1271,7 +1272,9 @@ function wireVisual(container, character){
   };
   img.src = character.image;
   img.alt = character.name;
-  img.title = character.image;
+  // Don't expose the raw image filename as a hover tooltip in normal play —
+  // it was only meant to help debug broken images (see DEBUG_SHOW_IMAGE_PATH).
+  img.removeAttribute("title");
 }
 
 function formatBadgeCount(n){ return n>99 ? "99+" : String(n); }
@@ -1763,7 +1766,7 @@ function resetOverlayVisuals(){
   orbitWrap.innerHTML = "";
   overlay.classList.remove("shake","shake-hard");
   statusText.textContent = "Opening...";
-  statusText.classList.remove("glitch-text");
+  revealRarity.classList.remove("glitch-text","go");
 }
 
 function scheduleHeartbeats(chargeTime){
@@ -1775,7 +1778,7 @@ function scheduleHeartbeats(chargeTime){
 }
 
 function startPackOpening(packId){
-  document.querySelectorAll(".pack-open-btn").forEach(b=>b.disabled = true);
+  document.querySelectorAll(".pack-open-btn, .pack-info-btn").forEach(b=>b.disabled = true);
   resetOverlayVisuals();
 
   const pack = PACKS.find(p=>p.id===packId) || PACKS[0];
@@ -1835,7 +1838,13 @@ function showReveal(rarity, remaining){
   revealRarity.textContent = info.label;
   statusText.textContent = "";
   Sound.fanfare(rarity);
-  setRevealBanner(rarity);
+  // Only flag this as "new" if the player doesn't already own it — inventory
+  // isn't incremented until claim, so checking it here (pre-claim) tells us
+  // whether this pull is actually the first copy.
+  const isNewPull = !(inventory[pendingCharacter.id] > 0);
+  if(isNewPull){
+    setRevealBanner(rarity);
+  }
 
   runRarityFlair(rarity, remaining);
 
@@ -1919,7 +1928,10 @@ function runRarityFlair(rarity, remaining){
     case "bumhole":
       raysEl.classList.add("spin");
       spawnOrbiters(20, [info.color, info.color2, "#ffd23f", "#7ed957", "#ff4fa3"], 170);
-      statusText.classList.add("glitch-text");
+      // The glitch effect needs both "glitch-text" and "go" classes to actually
+      // animate (see .glitch-text.go in CSS), and statusText is already emptied
+      // by this point in the reveal — so glitch the visible rarity label instead.
+      revealRarity.classList.add("glitch-text", "go");
       overlay.classList.add("shake-hard");
       burstConfetti({ colors:[info.color, info.color2, "#ffd23f"], count:180, spread:120, power:13 });
       // escalating gag bursts across the very long duration
@@ -1957,7 +1969,7 @@ function claimCharacter(){
 function closeOverlay(){
   clearExtraTimers();
   overlay.classList.remove("show");
-  document.querySelectorAll(".pack-open-btn").forEach(b=>b.disabled = false);
+  document.querySelectorAll(".pack-open-btn, .pack-info-btn").forEach(b=>b.disabled = false);
   pendingCharacter = null;
   pendingRarity = null;
 }
