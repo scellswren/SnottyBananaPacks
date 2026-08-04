@@ -596,25 +596,41 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   display:flex; align-items:center; justify-content:center;
 }
 .opening-pack .pack-icon{
-  width:74px; height:94px; border-radius:12px; position:relative;
-  background:rgba(255,255,255,.22); border:2px solid rgba(255,255,255,.55);
+  width:74px; height:94px; position:relative;
   display:flex; align-items:center; justify-content:center;
   animation:iconPulse .9s cubic-bezier(.45,0,.55,1) infinite;
 }
-.opening-pack .pack-icon::before{ content:''; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.7); animation:iconDotPulse .9s cubic-bezier(.45,0,.55,1) infinite; }
+.pack-icon-facet{
+  position:absolute; inset:0; border-radius:14px;
+  background:linear-gradient(135deg, rgba(255,255,255,.5), rgba(255,255,255,.08));
+  border:2px solid rgba(255,255,255,.6);
+  backdrop-filter:blur(1px);
+}
+.pack-icon-facet.f1{ transform:rotate(0deg); }
+.pack-icon-facet.f2{ transform:rotate(45deg) scale(.86); opacity:.55; animation:facetSpin 3.6s linear infinite; }
+@keyframes facetSpin{ from{ transform:rotate(45deg) scale(.86); } to{ transform:rotate(405deg) scale(.86); } }
+.pack-icon-core{
+  width:26px; height:26px; border-radius:50%; position:relative; z-index:2;
+  background:radial-gradient(circle at 35% 30%, #fff, rgba(255,255,255,.65) 55%, rgba(255,255,255,.15) 80%);
+  box-shadow:0 0 18px 6px rgba(255,255,255,.55);
+  animation:iconDotPulse .9s cubic-bezier(.45,0,.55,1) infinite;
+}
 @keyframes iconPulse{ 0%,100%{ transform:scale(1) rotate(0deg); } 50%{ transform:scale(1.14) rotate(-6deg); } }
-@keyframes iconDotPulse{ 0%,100%{ opacity:.7; transform:scale(1); } 50%{ opacity:1; transform:scale(1.25); } }
+@keyframes iconDotPulse{ 0%,100%{ opacity:.75; transform:scale(1); } 50%{ opacity:1; transform:scale(1.3); box-shadow:0 0 26px 10px rgba(255,255,255,.7); } }
 
-/* charging phase: universal buildup, gets faster and tighter the closer it gets to bursting */
+/* charging phase: universal buildup, gets faster/tighter the closer it gets to bursting.
+   --charge-amt scales the amplitude of the buildup so higher rarities feel visibly
+   more turbulent than common ones, even before the rarity is revealed. */
+.opening-pack{ --charge-amt:1; }
 .opening-pack.charging{ animation:packCharge 1.1s cubic-bezier(.45,0,.55,1) infinite; }
 @keyframes packCharge{
-  0%,100%{ transform:scale(1) rotate(-1.5deg); filter:brightness(1); }
-  50%{ transform:scale(1.06) rotate(1.5deg); filter:brightness(1.18); }
+  0%,100%{ transform:scale(1) rotate(calc(-1.5deg * var(--charge-amt))); filter:brightness(1); }
+  50%{ transform:scale(calc(1 + 0.06 * var(--charge-amt))) rotate(calc(1.5deg * var(--charge-amt))); filter:brightness(calc(1 + 0.18 * var(--charge-amt))); }
 }
 .opening-pack.charging.urgent{ animation:packChargeUrgent .38s cubic-bezier(.5,0,.5,1) infinite; }
 @keyframes packChargeUrgent{
-  0%,100%{ transform:scale(1.04) rotate(-3.5deg); filter:brightness(1.1); }
-  50%{ transform:scale(1.14) rotate(3.5deg); filter:brightness(1.35); }
+  0%,100%{ transform:scale(calc(1 + 0.04 * var(--charge-amt))) rotate(calc(-3.5deg * var(--charge-amt))); filter:brightness(calc(1 + 0.1 * var(--charge-amt))); }
+  50%{ transform:scale(calc(1 + 0.14 * var(--charge-amt))) rotate(calc(3.5deg * var(--charge-amt))); filter:brightness(calc(1 + 0.35 * var(--charge-amt))); }
 }
 .glow-ring{
   position:absolute; width:220px; height:290px; border-radius:26px;
@@ -622,11 +638,26 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   animation:ringPulse 1.1s cubic-bezier(.2,.8,.3,1) infinite;
   opacity:0;
 }
+.glow-ring.ring-2{ animation-delay:.4s; animation-duration:1.5s; }
 .charging .glow-ring{ opacity:1; }
-.charging.urgent .glow-ring{ animation:ringPulse .5s cubic-bezier(.2,.8,.3,1) infinite; }
+.charging.urgent .glow-ring{ animation-duration:.5s; }
+.charging.urgent .glow-ring.ring-2{ animation-duration:.7s; }
 @keyframes ringPulse{
   0%{ box-shadow:0 0 0 0 var(--glow-color); opacity:.9; }
-  100%{ box-shadow:0 0 70px 30px transparent; opacity:0; }
+  100%{ box-shadow:0 0 calc(70px * var(--charge-amt)) calc(30px * var(--charge-amt)) transparent; opacity:0; }
+}
+
+/* floating charge sparks — spawned by JS during charging, density/speed scaled by rarity tier */
+.spark-layer{ position:absolute; inset:-40px; pointer-events:none; overflow:visible; z-index:1; }
+.charge-spark{
+  position:absolute; bottom:36%; left:50%; width:6px; height:6px; border-radius:50%;
+  background:var(--spark-color, #fff); box-shadow:0 0 8px 2px var(--spark-color, #fff);
+  opacity:0; animation:sparkFloat var(--spark-dur, 1.1s) ease-out forwards;
+}
+@keyframes sparkFloat{
+  0%{ opacity:0; transform:translate(0,0) scale(.4); }
+  12%{ opacity:1; }
+  100%{ opacity:0; transform:translate(var(--spark-x,0px), var(--spark-y,-90px)) scale(1); }
 }
 
 /* burst flash */
@@ -636,6 +667,19 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 }
 .burst-flash.go{ animation:flashPop .5s ease-out; }
 @keyframes flashPop{ 0%{ opacity:0; } 15%{ opacity:.95; } 100%{ opacity:0; } }
+
+/* expanding shockwave ring at the moment of burst */
+.shockwave{
+  position:absolute; width:60px; height:60px; border-radius:50%;
+  border:3px solid var(--glow-color, #fff); opacity:0; pointer-events:none;
+  z-index:4; box-shadow:0 0 30px 4px var(--glow-color, #fff);
+}
+.shockwave.go{ animation:shockwaveBurst .7s cubic-bezier(.15,.7,.3,1) forwards; }
+@keyframes shockwaveBurst{
+  0%{ opacity:.95; transform:scale(.4); border-width:6px; }
+  70%{ opacity:.4; }
+  100%{ opacity:0; transform:scale(9); border-width:0; }
+}
 
 .opening-pack.bursting{ animation:packBurst .5s cubic-bezier(.3,0,.2,1) forwards; }
 @keyframes packBurst{ 0%{ transform:scale(1); } 40%{ transform:scale(1.25) rotate(-4deg); } 100%{ transform:scale(0); opacity:0; } }
@@ -648,8 +692,24 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   opacity:0; transform:scale(.6) translateY(30px);
   box-shadow:var(--shadow-lg);
 }
+.opening-stage{ perspective:1200px; }
 .reveal-card.enter{ animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards; }
 @keyframes revealIn{ to{ opacity:1; transform:scale(1) translateY(0); } }
+
+/* tier-specific entrances so common pulls feel calm and top pulls feel like an event,
+   instead of every rarity playing the exact same pop-in. */
+.reveal-card.rarity-common.enter,
+.reveal-card.rarity-uncommon.enter{ animation:revealInLow .55s cubic-bezier(.25,1,.4,1) forwards; }
+@keyframes revealInLow{ to{ opacity:1; transform:scale(1) translateY(0); } }
+
+.reveal-card.rarity-rare.enter,
+.reveal-card.rarity-epic.enter{ animation:revealInMid .8s cubic-bezier(.2,1.5,.3,1) forwards; }
+@keyframes revealInMid{
+  0%{ opacity:0; transform:scale(.6) translateY(30px) rotate(0deg); }
+  55%{ opacity:1; transform:scale(1.07) translateY(-4px) rotate(-3deg); }
+  75%{ transform:scale(.98) translateY(0) rotate(2deg); }
+  100%{ opacity:1; transform:scale(1) translateY(0) rotate(0deg); }
+}
 .reveal-visual{
   width:190px; height:190px; margin:0 auto 16px; border-radius:22px; overflow:hidden;
   display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,.2);
@@ -661,6 +721,27 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .reveal-num{ font-size:12px; font-weight:800; letter-spacing:1px; color:rgba(255,255,255,.75); font-variant-numeric:tabular-nums; margin-bottom:2px; }
 .reveal-card h2{ font-family:var(--font-display); font-size:25px; margin:4px 0 10px; color:#fff; }
 .reveal-rarity{ font-family:var(--font-display); font-weight:800; letter-spacing:1px; text-transform:uppercase; font-size:14px; color:#fff; opacity:.92; }
+
+.reveal-card.rarity-rare::before,
+.reveal-card.rarity-epic::before,
+.reveal-card.rarity-legendary::before,
+.reveal-card.rarity-mythic::before,
+.reveal-card.rarity-bumhole::before{
+  content:''; position:absolute; inset:0; border-radius:inherit; overflow:hidden; pointer-events:none; z-index:3;
+  background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.55) 48%, rgba(255,255,255,.55) 52%, transparent 70%);
+  transform:translateX(-140%); opacity:0;
+  animation:cardSheen 1.1s ease-out 1 forwards;
+  animation-delay:.55s;
+}
+.reveal-card.rarity-legendary::before,
+.reveal-card.rarity-mythic::before,
+.reveal-card.rarity-bumhole::before{ animation-iteration-count:2; animation-duration:.9s; }
+@keyframes cardSheen{
+  0%{ transform:translateX(-140%); opacity:0; }
+  15%{ opacity:1; }
+  55%{ opacity:1; }
+  100%{ transform:translateX(140%); opacity:0; }
+}
 
 .claim-btn{
   margin-top:22px; border:none; border-radius:16px; padding:14px 40px;
@@ -689,8 +770,20 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .reveal-card.rarity-rare{ background:linear-gradient(160deg, var(--c-rare), var(--c-rare-2)); }
 .reveal-card.rarity-epic{ background:linear-gradient(160deg, var(--c-epic), var(--c-epic-2)); }
 .reveal-card.rarity-legendary{ background:linear-gradient(160deg, var(--c-legendary), var(--c-legendary-2)); }
-.reveal-card.rarity-mythic{ background:linear-gradient(135deg, var(--c-mythic), var(--c-mythic-2), var(--c-mythic)); background-size:300% 300%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 2.4s linear infinite 0.7s, mythicRing 2.6s linear infinite 0.7s; }
-.reveal-card.rarity-bumhole{ background:linear-gradient(135deg, var(--c-bumhole), var(--c-bumhole-2), #d9b45c, var(--c-bumhole-2)); background-size:400% 400%; animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, holoShift 1.6s linear infinite 0.7s, bumholeWobbleCard 2s ease-in-out infinite 0.7s; position:relative; }
+.reveal-card.rarity-mythic{ background:linear-gradient(135deg, var(--c-mythic), var(--c-mythic-2), var(--c-mythic)); background-size:300% 300%; animation:revealInMythic .9s cubic-bezier(.2,1.1,.3,1) forwards, holoShift 2.4s linear infinite 0.7s, mythicRing 2.6s linear infinite 0.7s; backface-visibility:hidden; }
+@keyframes revealInMythic{
+  0%{ opacity:0; transform:scale(.5) translateY(30px) rotateY(-130deg); }
+  55%{ opacity:1; transform:scale(1.05) translateY(-6px) rotateY(20deg); }
+  100%{ opacity:1; transform:scale(1) translateY(0) rotateY(0deg); }
+}
+.reveal-card.rarity-bumhole{ background:linear-gradient(135deg, var(--c-bumhole), var(--c-bumhole-2), #d9b45c, var(--c-bumhole-2)); background-size:400% 400%; animation:revealInBumhole .8s cubic-bezier(.34,1.56,.64,1) forwards, holoShift 1.6s linear infinite 0.7s, bumholeWobbleCard 2s ease-in-out infinite 0.7s; position:relative; }
+@keyframes revealInBumhole{
+  0%{ opacity:0; transform:scale(.4) translateY(30px); }
+  50%{ opacity:1; transform:scale(1.12,.88) translateY(4px); }
+  68%{ transform:scale(.94,1.08) translateY(-6px); }
+  84%{ transform:scale(1.04,.97) translateY(2px); }
+  100%{ opacity:1; transform:scale(1,1) translateY(0); }
+}
 .reveal-card.rarity-bumhole::after{
   content:'💩'; position:absolute; top:-16px; right:-10px; font-size:32px; z-index:5;
   filter:drop-shadow(0 3px 7px rgba(0,0,0,.5)); animation:poopWiggle 1.7s ease-in-out infinite;
@@ -699,7 +792,12 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole), 0 0 26px rgba(121,78,35,.4); }
   50%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole-2), 0 0 44px rgba(121,78,35,.7); }
 }
-.reveal-card.rarity-legendary{ animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards, legendaryGlowCard 2.2s ease-in-out infinite 0.7s; }
+.reveal-card.rarity-legendary{ animation:revealInHigh .85s cubic-bezier(.15,1.4,.3,1) forwards, legendaryGlowCard 2.2s ease-in-out infinite 0.7s; }
+@keyframes revealInHigh{
+  0%{ opacity:0; transform:scale(.55) translateY(40px); filter:brightness(1); }
+  50%{ opacity:1; transform:scale(1.1) translateY(-10px); filter:brightness(1.6); }
+  100%{ opacity:1; transform:scale(1) translateY(0); filter:brightness(1); }
+}
 @keyframes legendaryGlowCard{
   0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-legendary), 0 0 26px rgba(255,201,60,.4); }
   50%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-legendary-2), 0 0 44px rgba(255,201,60,.7); }
@@ -905,6 +1003,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 <!-- Pack opening overlay -->
 <div class="opening-overlay" id="openingOverlay">
   <div class="burst-flash" id="burstFlash"></div>
+  <div class="shockwave" id="shockwave"></div>
   <div class="rays" id="rays"></div>
   <div class="orbit-wrap" id="orbitWrap"></div>
   <div class="legend-banner" id="legendBanner"></div>
@@ -915,7 +1014,13 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 
     <div class="opening-pack charging" id="openingPack">
       <div class="glow-ring"></div>
-      <div class="pack-icon"></div>
+      <div class="glow-ring ring-2"></div>
+      <div class="spark-layer" id="sparkLayer"></div>
+      <div class="pack-icon">
+        <div class="pack-icon-facet f1"></div>
+        <div class="pack-icon-facet f2"></div>
+        <div class="pack-icon-core"></div>
+      </div>
     </div>
 
     <div class="reveal-card" id="revealCard" style="display:none">
@@ -1806,6 +1911,8 @@ const revealName    = document.getElementById("revealName");
 const revealRarity  = document.getElementById("revealRarity");
 const claimBtn      = document.getElementById("claimBtn");
 const burstFlash    = document.getElementById("burstFlash");
+const shockwaveEl   = document.getElementById("shockwave");
+const sparkLayer    = document.getElementById("sparkLayer");
 const raysEl        = document.getElementById("rays");
 const orbitWrap     = document.getElementById("orbitWrap");
 const legendBanner  = document.getElementById("legendBanner");
@@ -1813,10 +1920,42 @@ const legendBanner  = document.getElementById("legendBanner");
 let pendingCharacter = null;
 let pendingRarity = null;
 let extraTimers = [];
+let sparkInterval = null;
 
 function clearExtraTimers(){
   extraTimers.forEach(t=>clearTimeout(t));
   extraTimers = [];
+  if(sparkInterval){ clearInterval(sparkInterval); sparkInterval = null; }
+}
+
+// Maps a rarity to a rough "how big should this feel" tier. Used to scale the
+// charge shake amplitude and spark density so higher-rarity pulls visibly build
+// more energy during the charging phase, even before the rarity itself is shown.
+function tierAmount(rarity){
+  const order = RARITIES[rarity].order;
+  if(order<=1) return 0.6;   // common / uncommon — calm
+  if(order<=3) return 1;     // rare / epic — standard
+  if(order===4) return 1.35; // legendary
+  if(order===5) return 1.7;  // mythic
+  return 2.1;                // bumhole — chaotic
+}
+
+function spawnChargeSparks(intensity){
+  if(sparkInterval) clearInterval(sparkInterval);
+  sparkLayer.innerHTML = "";
+  const rate = Math.max(70, 220 - intensity*70); // faster spawn at higher intensity
+  sparkInterval = setInterval(()=>{
+    const spark = document.createElement("div");
+    spark.className = "charge-spark";
+    const angle = Math.random()*Math.PI*2;
+    const dist = 60 + Math.random()*50*intensity;
+    spark.style.setProperty("--spark-x", (Math.cos(angle)*dist).toFixed(1)+"px");
+    spark.style.setProperty("--spark-y", (Math.sin(angle)*dist - 40).toFixed(1)+"px");
+    spark.style.setProperty("--spark-dur", (0.7 + Math.random()*0.5)+"s");
+    spark.style.setProperty("--spark-color", Math.random() < 0.5 ? "#fff" : "rgba(255,255,255,.7)");
+    sparkLayer.appendChild(spark);
+    setTimeout(()=>spark.remove(), 1300);
+  }, rate);
 }
 
 function resetOverlayVisuals(){
@@ -1826,6 +1965,8 @@ function resetOverlayVisuals(){
   revealCard.className = "reveal-card";
   claimBtn.classList.remove("show");
   burstFlash.className = "burst-flash";
+  shockwaveEl.className = "shockwave";
+  sparkLayer.innerHTML = "";
   raysEl.className = "rays";
   legendBanner.className = "legend-banner";
   legendBanner.textContent = "";
@@ -1865,6 +2006,13 @@ function startPackOpening(packId){
   const rarityInfo = RARITIES[pendingRarity];
   openingPack.classList.add("rarity-"+pendingRarity);
 
+  // Scale the charging buildup (shake amplitude + spark density) by rarity so
+  // the lead-up already feels distinct per tier, not just the reveal itself.
+  const intensity = tierAmount(pendingRarity);
+  openingPack.style.setProperty("--charge-amt", intensity);
+  shockwaveEl.style.setProperty("--glow-color", rarityInfo.color);
+  spawnChargeSparks(intensity);
+
   // Phase timings: ~35% charging, then burst + reveal for the remainder.
   const total = rarityInfo.duration;
   const chargeTime = Math.min(1200, total*0.3);
@@ -1880,8 +2028,11 @@ function startPackOpening(packId){
 }
 
 function triggerBurst(rarity, total, chargeTime){
-  // universal burst flash
+  if(sparkInterval){ clearInterval(sparkInterval); sparkInterval = null; }
+  sparkLayer.innerHTML = "";
+  // universal burst flash + expanding shockwave ring
   burstFlash.classList.add("go");
+  shockwaveEl.classList.add("go");
   openingPack.classList.remove("charging");
   openingPack.classList.add("bursting");
   statusText.textContent = "Here we go...";
