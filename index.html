@@ -661,6 +661,27 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .reveal-card h2{ font-family:var(--font-display); font-size:25px; margin:4px 0 10px; color:#fff; }
 .reveal-rarity{ font-family:var(--font-display); font-weight:800; letter-spacing:1px; text-transform:uppercase; font-size:14px; color:#fff; opacity:.92; }
 
+.reveal-tag{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:96px;
+  padding:6px 14px;
+  border-radius:999px;
+  text-transform:none;
+  letter-spacing:1px;
+  color:#fff;
+  box-shadow:0 10px 24px rgba(0,0,0,.24);
+}
+.reveal-tag-new{ background:linear-gradient(120deg, #ff4d4d, #ff1f1f); }
+.reveal-tag-legendary{ background:linear-gradient(120deg, #ffd95a, #ffb11f); color:#2a1600; }
+.reveal-tag-mythic{
+  background:linear-gradient(120deg, #ff6ec7, #ffd23c, #6effa1, #5ae2ff, #b06eff);
+  background-size:300% 300%;
+  animation:holoShift 2.4s linear infinite;
+}
+.reveal-tag-bumhole{ background:linear-gradient(120deg, var(--c-bumhole), var(--c-bumhole-2)); }
+
 .claim-btn{
   margin-top:22px; border:none; border-radius:16px; padding:14px 40px;
   font-family:var(--font-display); font-weight:700; font-size:17px; color:#241a00;
@@ -995,10 +1016,6 @@ const CHARACTERS = [
   { id:"annoying-oringe",   name:"Annoying Oringe",   rarity:"legendary",packId:"orin-pack", image:"AnnoyingOringe.jpg",   num:23 },
   { id:"angry-orin",        name:"Angry Orin",        rarity:"common",   packId:"orin-pack", image:"AngryOrin.jpg",        num:24 },
   { id:"sad-orin",          name:"Sad Orin",          rarity:"common",   packId:"orin-pack", image:"SadOrin.jpg",          num:25 },
-  { id:"okoye-orin",        name:"Okoye Orin",        rarity:"mythic",    packId:"orin-pack", image:"OkoyeOrin.jpg",        num:26 },
-  { id:"doc-ock-orin",      name:"Doc Ock Orin",      rarity:"legendary", packId:"orin-pack", image:"DocOckOrin.jpg",      num:27 },
-  { id:"kanye-orin",        name:"Kanye Orin",        rarity:"bumhole",   packId:"orin-pack", image:"KanyeWestOrin.jpg",   num:28 },
-  { id:"samsung-smart-fridge-orin", name:"Samsung Smart Fridge Orin", rarity:"epic", packId:"orin-pack", image:"SamsungSmartFridgeOrin.jpg", num:29 },
 ];
 
 const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
@@ -1811,15 +1828,35 @@ function triggerBurst(rarity, total, chargeTime){
   extraTimers.push(t2);
 }
 
+function getRevealTagInfo(rarity, isNew){
+  if(rarity === "bumhole"){
+    return { text:"My Bum Hurts", className:"reveal-tag reveal-tag-bumhole" };
+  }
+  if(!isNew){
+    return { text:"", className:"" };
+  }
+  if(rarity === "legendary"){
+    return { text:"NEW", className:"reveal-tag reveal-tag-legendary" };
+  }
+  if(rarity === "mythic"){
+    return { text:"NEW", className:"reveal-tag reveal-tag-mythic" };
+  }
+  return { text:"NEW", className:"reveal-tag reveal-tag-new" };
+}
+
 function showReveal(rarity, remaining){
   openingPack.style.display = "none";
+  const isNew = !(inventory[pendingCharacter.id] > 0);
   const info = RARITIES[rarity];
+  const tagInfo = getRevealTagInfo(rarity, isNew);
   revealCard.style.display = "block";
   revealCard.className = "reveal-card rarity-"+rarity+" enter";
   wireVisual(revealVisual, pendingCharacter);
   revealNum.textContent = formatNum(pendingCharacter.num);
   revealName.textContent = pendingCharacter.name;
-  revealRarity.textContent = info.label;
+  revealRarity.className = "reveal-rarity " + tagInfo.className;
+  revealRarity.textContent = tagInfo.text;
+  revealRarity.style.display = tagInfo.text ? "inline-flex" : "none";
   statusText.textContent = "";
   Sound.fanfare(rarity);
 
