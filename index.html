@@ -820,6 +820,13 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
       <h1>Packs</h1>
     </div>
     <div class="home-stage">
+      <div class="dropdown" id="homePackDropdown">
+        <button class="dropdown-trigger" id="homePackDropdownTrigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+          <span id="homePackDropdownLabel">Orin Pack</span>
+          <span class="dropdown-arrow">▾</span>
+        </button>
+        <div class="dropdown-panel" id="homePackDropdownPanel" role="listbox"></div>
+      </div>
       <div class="pack-picker" id="packPicker"></div>
     </div>
   </section>
@@ -975,6 +982,7 @@ const RARITIES = {
 
 const PACKS = [
   { id:"orin-pack", name:"Orin Pack", color:"#FF8A3D", color2:"#E8590C" },
+  { id:"wren-pack", name:"Wren Pack", color:"#A855F7", color2:"#6D28D9" },
 ];
 
 // Add new characters here later; everything else adapts automatically.
@@ -1015,6 +1023,10 @@ const CHARACTERS = [
   { id:"samsung-smart-fridge-orin", name:"Samsung Smart Fridge Orin", rarity:"epic", packId:"orin-pack", image:"SamsungSmartFridgeOrin.jpg", num:29 },
   { id:"gangster-orin",     name:"Gangster Orin",     rarity:"rare",     packId:"orin-pack", image:"GangsterOrin.jpg",      num:30 },
   { id:"mcdonalds-worker-orin", name:"McDonald's Worker Orin", rarity:"rare", packId:"orin-pack", image:"McDonald'sWorkerOrin.jpg", num:31 },
+
+  { id:"wren",               name:"Wren",               rarity:"common",   packId:"wren-pack", image:"Wren.jpg",             num:1 },
+  { id:"bald-wren",          name:"Bald Wren",          rarity:"uncommon", packId:"wren-pack", image:"BaldWren.jpg",         num:2 },
+  { id:"chef-wren",          name:"Chef Wren",          rarity:"uncommon", packId:"wren-pack", image:"ChefWren.jpg",         num:3 },
 ];
 
 const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
@@ -1299,11 +1311,13 @@ updateBadgeUI();
 
 /* ======================= PACK PICKER (home) ======================= */
 
+let currentHomePack = PACKS[0].id;
+
 function renderPackPicker(){
   const wrap = document.getElementById("packPicker");
-  wrap.innerHTML = PACKS.map(p=>{
-    const count = CHARACTERS.filter(c=>c.packId===p.id).length;
-    return `<div class="pack-card" style="--pack-color:${p.color}; --pack-color2:${p.color2}">
+  const p = PACKS.find(pk=>pk.id===currentHomePack) || PACKS[0];
+  const count = CHARACTERS.filter(c=>c.packId===p.id).length;
+  wrap.innerHTML = `<div class="pack-card" style="--pack-color:${p.color}; --pack-color2:${p.color2}">
       <div class="layer back2"></div>
       <div class="layer back1"></div>
       <div class="layer front">
@@ -1313,7 +1327,6 @@ function renderPackPicker(){
       </div>
       <button class="pack-info-btn" data-pack-id="${p.id}" title="View pack contents" aria-label="View pack contents">i</button>
     </div>`;
-  }).join("");
 
   wrap.querySelectorAll(".pack-open-btn").forEach(btn=>{
     btn.addEventListener("click", ()=>{ Sound.packSelect(); startPackOpening(btn.dataset.packId); });
@@ -1323,6 +1336,57 @@ function renderPackPicker(){
   });
 }
 renderPackPicker();
+
+/* ----- home pack dropdown (choose which pack is shown) ----- */
+
+const homePackDropdown        = document.getElementById("homePackDropdown");
+const homePackDropdownTrigger = document.getElementById("homePackDropdownTrigger");
+const homePackDropdownLabel   = document.getElementById("homePackDropdownLabel");
+const homePackDropdownPanel   = document.getElementById("homePackDropdownPanel");
+
+function renderHomePackDropdown(){
+  const current = PACKS.find(p=>p.id===currentHomePack) || PACKS[0];
+  homePackDropdownLabel.textContent = current.name;
+
+  homePackDropdownPanel.innerHTML = PACKS.map(p=>{
+    const active = currentHomePack===p.id;
+    return `<button class="dropdown-option${active?" active":""}" data-value="${p.id}" role="option" aria-selected="${active}">${p.name}<span class="check">✓</span></button>`;
+  }).join("");
+
+  homePackDropdownPanel.querySelectorAll(".dropdown-option").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(btn.dataset.value!==currentHomePack){
+        currentHomePack = btn.dataset.value;
+        Sound.pillSelect();
+        renderHomePackDropdown();
+        renderPackPicker();
+      }
+      closeHomePackDropdown();
+    });
+  });
+}
+function openHomePackDropdown(){
+  homePackDropdownTrigger.classList.add("open");
+  homePackDropdownTrigger.setAttribute("aria-expanded","true");
+  homePackDropdownPanel.classList.add("show");
+}
+function closeHomePackDropdown(){
+  homePackDropdownTrigger.classList.remove("open");
+  homePackDropdownTrigger.setAttribute("aria-expanded","false");
+  homePackDropdownPanel.classList.remove("show");
+}
+homePackDropdownTrigger.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  Sound.click();
+  if(homePackDropdownPanel.classList.contains("show")) closeHomePackDropdown(); else openHomePackDropdown();
+});
+document.addEventListener("click", (e)=>{
+  if(!homePackDropdown.contains(e.target)) closeHomePackDropdown();
+});
+document.addEventListener("keydown", (e)=>{
+  if(e.key==="Escape") closeHomePackDropdown();
+});
+renderHomePackDropdown();
 
 /* ======================= ODDS LIST (Inventory / Index) ======================= */
 
