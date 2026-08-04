@@ -661,27 +661,6 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .reveal-card h2{ font-family:var(--font-display); font-size:25px; margin:4px 0 10px; color:#fff; }
 .reveal-rarity{ font-family:var(--font-display); font-weight:800; letter-spacing:1px; text-transform:uppercase; font-size:14px; color:#fff; opacity:.92; }
 
-.reveal-tag{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:96px;
-  padding:6px 14px;
-  border-radius:999px;
-  text-transform:none;
-  letter-spacing:1px;
-  color:#fff;
-  box-shadow:0 10px 24px rgba(0,0,0,.24);
-}
-.reveal-tag-new{ background:linear-gradient(120deg, #ff4d4d, #ff1f1f); }
-.reveal-tag-legendary{ background:linear-gradient(120deg, #ffd95a, #ffb11f); color:#2a1600; }
-.reveal-tag-mythic{
-  background:linear-gradient(120deg, #ff6ec7, #ffd23c, #6effa1, #5ae2ff, #b06eff);
-  background-size:300% 300%;
-  animation:holoShift 2.4s linear infinite;
-}
-.reveal-tag-bumhole{ background:linear-gradient(120deg, var(--c-bumhole), var(--c-bumhole-2)); }
-
 .claim-btn{
   margin-top:22px; border:none; border-radius:16px; padding:14px 40px;
   font-family:var(--font-display); font-weight:700; font-size:17px; color:#241a00;
@@ -768,8 +747,21 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .legend-banner{
   position:absolute; top:8%; font-family:var(--font-display); font-weight:800; font-size:15px;
   letter-spacing:3px; color:#fff; opacity:0; text-transform:uppercase;
+  text-shadow:0 2px 10px rgba(0,0,0,.35);
 }
 .legend-banner.go{ animation:bannerFly 1.4s ease-out forwards; }
+.legend-banner.tag-new{ color:#ff5a67; }
+.legend-banner.tag-legendary{ color:var(--c-legendary); text-shadow:0 0 14px rgba(255,201,60,.5); }
+.legend-banner.tag-mythic{
+  background:linear-gradient(90deg, #ff6ec7, #ffd23c, #6effa1, #5ae2ff, #b06eff, #ff6ec7);
+  background-size:300% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  text-shadow:none;
+  animation:bannerFly 1.4s ease-out forwards, holoShift 2.4s linear infinite 1.4s;
+}
+.legend-banner.tag-bumhole{ color:var(--c-bumhole); text-shadow:0 0 14px rgba(121,78,35,.45); }
 @keyframes bannerFly{ 0%{ opacity:0; transform:translateY(-10px) scale(.7); } 30%{ opacity:1; transform:translateY(0) scale(1.1); } 60%{ transform:scale(1); } 100%{ opacity:1; } }
 
 .close-open-btn{
@@ -1016,6 +1008,10 @@ const CHARACTERS = [
   { id:"annoying-oringe",   name:"Annoying Oringe",   rarity:"legendary",packId:"orin-pack", image:"AnnoyingOringe.jpg",   num:23 },
   { id:"angry-orin",        name:"Angry Orin",        rarity:"common",   packId:"orin-pack", image:"AngryOrin.jpg",        num:24 },
   { id:"sad-orin",          name:"Sad Orin",          rarity:"common",   packId:"orin-pack", image:"SadOrin.jpg",          num:25 },
+  { id:"okoye-orin",        name:"Okoye Orin",        rarity:"mythic",    packId:"orin-pack", image:"OkoyeOrin.jpg",        num:26 },
+  { id:"doc-ock-orin",      name:"Doc Ock Orin",      rarity:"legendary", packId:"orin-pack", image:"DocOckOrin.jpg",      num:27 },
+  { id:"kanye-orin",        name:"Kanye Orin",        rarity:"bumhole",   packId:"orin-pack", image:"KanyeWestOrin.jpg",   num:28 },
+  { id:"samsung-smart-fridge-orin", name:"Samsung Smart Fridge Orin", rarity:"epic", packId:"orin-pack", image:"SamsungSmartFridgeOrin.jpg", num:29 },
 ];
 
 const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
@@ -1828,37 +1824,18 @@ function triggerBurst(rarity, total, chargeTime){
   extraTimers.push(t2);
 }
 
-function getRevealTagInfo(rarity, isNew){
-  if(rarity === "bumhole"){
-    return { text:"My Bum Hurts", className:"reveal-tag reveal-tag-bumhole" };
-  }
-  if(!isNew){
-    return { text:"", className:"" };
-  }
-  if(rarity === "legendary"){
-    return { text:"NEW", className:"reveal-tag reveal-tag-legendary" };
-  }
-  if(rarity === "mythic"){
-    return { text:"NEW", className:"reveal-tag reveal-tag-mythic" };
-  }
-  return { text:"NEW", className:"reveal-tag reveal-tag-new" };
-}
-
 function showReveal(rarity, remaining){
   openingPack.style.display = "none";
-  const isNew = !(inventory[pendingCharacter.id] > 0);
   const info = RARITIES[rarity];
-  const tagInfo = getRevealTagInfo(rarity, isNew);
   revealCard.style.display = "block";
   revealCard.className = "reveal-card rarity-"+rarity+" enter";
   wireVisual(revealVisual, pendingCharacter);
   revealNum.textContent = formatNum(pendingCharacter.num);
   revealName.textContent = pendingCharacter.name;
-  revealRarity.className = "reveal-rarity " + tagInfo.className;
-  revealRarity.textContent = tagInfo.text;
-  revealRarity.style.display = tagInfo.text ? "inline-flex" : "none";
+  revealRarity.textContent = info.label;
   statusText.textContent = "";
   Sound.fanfare(rarity);
+  setRevealBanner(rarity);
 
   runRarityFlair(rarity, remaining);
 
@@ -1881,6 +1858,24 @@ function spawnOrbiters(count, colors, radius){
     dot.style.animationDelay = (-(i*0.3))+"s";
     dot.style.setProperty("--radius", radius+"px");
     orbitWrap.appendChild(dot);
+  }
+}
+
+
+function setRevealBanner(rarity){
+  legendBanner.className = "legend-banner go";
+  if(rarity === "legendary"){
+    legendBanner.textContent = "NEW";
+    legendBanner.classList.add("tag-legendary");
+  } else if(rarity === "mythic"){
+    legendBanner.textContent = "NEW";
+    legendBanner.classList.add("tag-mythic");
+  } else if(rarity === "bumhole"){
+    legendBanner.textContent = "My Bum Hurts";
+    legendBanner.classList.add("tag-bumhole");
+  } else {
+    legendBanner.textContent = "NEW";
+    legendBanner.classList.add("tag-new");
   }
 }
 
@@ -1910,8 +1905,6 @@ function runRarityFlair(rarity, remaining){
     case "legendary":
       raysEl.classList.add("spin");
       spawnOrbiters(10, [info.color, info.color2, "#fff5cc"], 130);
-      legendBanner.textContent = "Legendary Pull!";
-      legendBanner.classList.add("go");
       overlay.classList.add("shake");
       burstConfetti({ colors:[info.color, info.color2, "#fff8dc"], count:200, spread:100, power:13 });
       extraTimers.push(setTimeout(()=>burstConfetti({ colors:[info.color, "#fff"], count:120, spread:100, power:12 }), 900));
@@ -1919,8 +1912,6 @@ function runRarityFlair(rarity, remaining){
     case "mythic":
       raysEl.classList.add("spin");
       spawnOrbiters(14, [info.color, info.color2, "#fff"], 150);
-      legendBanner.textContent = "Mythic Pull!!";
-      legendBanner.classList.add("go");
       burstConfetti({ colors:[info.color, info.color2, "#fff", "#ffd23f"], count:160, spread:110, power:12 });
       extraTimers.push(setTimeout(()=>{ overlay.classList.add("shake"); burstConfetti({ colors:[info.color, info.color2, "#7ed957", "#ffd23f"], count:220, spread:130, power:14 }); Sound.fanfare("mythic"); }, 1600));
       extraTimers.push(setTimeout(()=>{ burstConfetti({ colors:["#fff", info.color, info.color2], count:260, spread:140, power:15 }); Sound.fanfare("mythic"); }, 3400));
@@ -1928,8 +1919,6 @@ function runRarityFlair(rarity, remaining){
     case "bumhole":
       raysEl.classList.add("spin");
       spawnOrbiters(20, [info.color, info.color2, "#ffd23f", "#7ed957", "#ff4fa3"], 170);
-      legendBanner.textContent = "💩 BUMHOLE 💩";
-      legendBanner.classList.add("go");
       statusText.classList.add("glitch-text");
       overlay.classList.add("shake-hard");
       burstConfetti({ colors:[info.color, info.color2, "#ffd23f"], count:180, spread:120, power:13 });
