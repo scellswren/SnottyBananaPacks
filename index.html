@@ -118,6 +118,22 @@ img{ -webkit-user-drag:none; user-select:none; }
 button{ font-family:inherit; }
 ::selection{ background:var(--banana); color:#221a00; }
 
+/* No text on the page can be highlighted/selected — keeps it feeling like an
+   app rather than a document. Inputs are explicitly exempted so typing,
+   pasting, and editing still work normally. */
+*{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+input, textarea{
+  -webkit-user-select:text;
+  -moz-user-select:text;
+  user-select:text;
+  -webkit-touch-callout:default;
+}
+
 a, button, .clickable{ cursor:pointer; }
 :focus-visible{ outline:3px solid var(--banana); outline-offset:2px; border-radius:8px; }
 
@@ -172,6 +188,63 @@ a, button, .clickable{ cursor:pointer; }
   min-height:16px; opacity:0; transition:opacity .2s ease;
 }
 .lock-error.show{ opacity:1; }
+
+/* ============================= 2FA ARROW SCREEN ============================= */
+.arrow-card{ max-width:380px; }
+.arrow-dots{ display:flex; justify-content:center; gap:10px; margin:4px 0 24px; }
+.arrow-dot{
+  width:13px; height:13px; border-radius:50%; background:var(--surface-2);
+  border:2px solid var(--border-strong); transition:background .2s ease, border-color .2s ease, transform .2s ease;
+}
+.arrow-dot.filled{ background:linear-gradient(120deg, var(--violet), var(--violet-deep)); border-color:var(--violet); transform:scale(1.15); }
+.dpad{ display:flex; flex-direction:column; align-items:center; gap:8px; margin:0 auto; width:fit-content; }
+.dpad-mid{ display:flex; align-items:center; gap:8px; }
+.dpad-center{
+  width:54px; height:54px; border-radius:16px; display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted); font-size:11px; font-weight:800; letter-spacing:.5px;
+  background:var(--surface-2); border:1px dashed var(--border-strong);
+}
+.dpad-btn{
+  width:54px; height:54px; border-radius:16px; border:1px solid var(--border);
+  background:var(--surface); color:var(--text); font-size:20px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 1px 0 rgba(255,255,255,.04) inset;
+  transition:transform .15s cubic-bezier(.3,1.5,.6,1), background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.dpad-btn:hover{ background:var(--surface-2); border-color:var(--border-strong); transform:translateY(-2px); }
+.dpad-btn:active, .dpad-btn.pressed{ transform:translateY(0) scale(.9); background:linear-gradient(120deg, var(--violet), var(--violet-deep)); color:#fff; border-color:transparent; }
+.dpad-btn.wrong{ animation:dpadWrong .35s ease; background:linear-gradient(120deg, var(--pink), #ff2f7c); color:#fff; border-color:transparent; }
+@keyframes dpadWrong{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-5px); } 75%{ transform:translateX(5px); } }
+
+/* ============================= FULLSCREEN FAB ============================= */
+.fullscreen-fab{
+  position:fixed; right:20px; bottom:20px; z-index:60;
+  width:52px; height:52px; border-radius:16px; border:1px solid var(--border-strong);
+  background:var(--bg-elevated); color:var(--text); font-size:22px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-md);
+  animation:fabIn .4s cubic-bezier(.3,1.4,.5,1);
+  transition:transform .18s cubic-bezier(.3,1.4,.6,1), background .2s ease, box-shadow .2s ease;
+}
+@keyframes fabIn{ from{ opacity:0; transform:translateY(14px) scale(.85); } to{ opacity:1; transform:translateY(0) scale(1); } }
+.fullscreen-fab:hover{ transform:translateY(-3px) scale(1.05); box-shadow:var(--shadow-lg); background:var(--surface-2); }
+.fullscreen-fab:active{ transform:translateY(0) scale(.94); }
+
+/* ============================= INVENTORY GROUPS ============================= */
+.inventory-groups{ display:flex; flex-direction:column; gap:34px; }
+.inv-group{ padding-top:2px; }
+.inv-group + .inv-group{ padding-top:32px; border-top:1px solid var(--border); }
+.inv-group-head{ display:flex; align-items:baseline; gap:11px; margin-bottom:16px; }
+.inv-group-head::before{
+  content:''; width:5px; height:20px; border-radius:5px; flex:none;
+  background:linear-gradient(180deg, var(--violet), var(--violet-deep));
+}
+.inv-group-head h2{ font-family:var(--font-display); font-size:19px; margin:0; letter-spacing:.2px; }
+.inv-group-head .inv-group-count{
+  font-size:12px; color:var(--text-muted); font-weight:700;
+  background:var(--surface); border:1px solid var(--border); padding:3px 10px; border-radius:999px;
+}
+.inv-sort-label{ font-size:13px; font-weight:700; color:var(--text-muted); margin-right:2px; }
 
 /* ============================= LAYOUT ============================= */
 .app-header{
@@ -515,6 +588,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .rarity-pill{
   display:inline-block; font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.5px;
   padding:3px 9px; border-radius:999px; color:#fff;
+  box-shadow:0 3px 8px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.25);
 }
 .qty-tag{
   position:absolute; top:8px; right:8px; z-index:3; background:rgba(0,0,0,.55); color:#fff;
@@ -696,19 +770,50 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .reveal-card.enter{ animation:revealIn .7s cubic-bezier(.2,1.3,.35,1) forwards; }
 @keyframes revealIn{ to{ opacity:1; transform:scale(1) translateY(0); } }
 
-/* tier-specific entrances so common pulls feel calm and top pulls feel like an event,
-   instead of every rarity playing the exact same pop-in. */
-.reveal-card.rarity-common.enter,
-.reveal-card.rarity-uncommon.enter{ animation:revealInLow .55s cubic-bezier(.25,1,.4,1) forwards; }
-@keyframes revealInLow{ to{ opacity:1; transform:scale(1) translateY(0); } }
+/* rarity-specific entrances so every tier feels distinct, not just increasingly
+   "bigger" versions of the same pop-in. */
 
-.reveal-card.rarity-rare.enter,
-.reveal-card.rarity-epic.enter{ animation:revealInMid .8s cubic-bezier(.2,1.5,.3,1) forwards; }
-@keyframes revealInMid{
-  0%{ opacity:0; transform:scale(.6) translateY(30px) rotate(0deg); }
-  55%{ opacity:1; transform:scale(1.07) translateY(-4px) rotate(-3deg); }
-  75%{ transform:scale(.98) translateY(0) rotate(2deg); }
-  100%{ opacity:1; transform:scale(1) translateY(0) rotate(0deg); }
+/* COMMON — plain, calm settle */
+.reveal-card.rarity-common.enter{ animation:revealInCommon .5s ease-out forwards; }
+@keyframes revealInCommon{
+  from{ opacity:0; transform:translateY(22px) scale(.96); }
+  to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* UNCOMMON — a cheerful little bounce with a twinkle */
+.reveal-card.rarity-uncommon.enter{ animation:revealInUncommon .6s cubic-bezier(.34,1.56,.64,1) forwards; }
+@keyframes revealInUncommon{
+  0%{ opacity:0; transform:scale(.7) translateY(26px); }
+  65%{ opacity:1; transform:scale(1.06) translateY(-5px); }
+  100%{ opacity:1; transform:scale(1) translateY(0); }
+}
+.reveal-card.rarity-uncommon::after{
+  content:'✦'; position:absolute; top:-10px; right:14px; font-size:20px; color:var(--c-uncommon);
+  opacity:0; animation:twinkle 1.4s ease-in-out infinite .6s;
+  text-shadow:0 0 10px rgba(63,224,138,.7); pointer-events:none;
+}
+@keyframes twinkle{ 0%,100%{ opacity:0; transform:scale(.6) rotate(0deg); } 50%{ opacity:1; transform:scale(1.15) rotate(20deg); } }
+
+/* RARE — a 3D card flip, like it's turning to face you */
+.reveal-card.rarity-rare.enter{ animation:revealInRare .75s cubic-bezier(.2,.9,.25,1) forwards; }
+@keyframes revealInRare{
+  0%{ opacity:0; transform:perspective(900px) rotateY(-110deg) scale(.8); }
+  60%{ opacity:1; transform:perspective(900px) rotateY(12deg) scale(1.03); }
+  100%{ opacity:1; transform:perspective(900px) rotateY(0deg) scale(1); }
+}
+
+/* EPIC — a jolt of static electricity, flickering as it lands */
+.reveal-card.rarity-epic.enter{ animation:revealInEpic .65s cubic-bezier(.36,.07,.19,.97) forwards, epicFlicker 1.6s linear infinite .65s; }
+@keyframes revealInEpic{
+  0%{ opacity:0; transform:scale(.5) translate(0,30px); }
+  35%{ opacity:1; transform:scale(1.1) translate(-7px,-5px); }
+  50%{ transform:scale(.95) translate(6px,4px); }
+  70%{ transform:scale(1.04) translate(-3px,-2px); }
+  100%{ opacity:1; transform:scale(1) translate(0,0); }
+}
+@keyframes epicFlicker{
+  0%,18%,22%,54%,58%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-epic), 0 0 24px rgba(185,131,255,.5); }
+  20%,56%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-epic-2), 0 0 8px rgba(185,131,255,.15); }
 }
 .reveal-visual{
   width:190px; height:190px; margin:0 auto 16px; border-radius:22px; overflow:hidden;
@@ -770,28 +875,46 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .reveal-card.rarity-rare{ background:linear-gradient(160deg, var(--c-rare), var(--c-rare-2)); }
 .reveal-card.rarity-epic{ background:linear-gradient(160deg, var(--c-epic), var(--c-epic-2)); }
 .reveal-card.rarity-legendary{ background:linear-gradient(160deg, var(--c-legendary), var(--c-legendary-2)); }
-.reveal-card.rarity-mythic{ background:linear-gradient(135deg, var(--c-mythic), var(--c-mythic-2), var(--c-mythic)); background-size:300% 300%; animation:revealInMythic .9s cubic-bezier(.2,1.1,.3,1) forwards, holoShift 2.4s linear infinite 0.7s, mythicRing 2.6s linear infinite 0.7s; backface-visibility:hidden; }
+/* MYTHIC — a spinning holo portal tears open behind the card */
+.reveal-card.rarity-mythic{ background:linear-gradient(135deg, var(--c-mythic), var(--c-mythic-2), var(--c-mythic)); background-size:300% 300%; animation:revealInMythic 1s cubic-bezier(.2,1.1,.3,1) forwards, holoShift 2.4s linear infinite 0.7s, mythicRing 2.6s linear infinite 0.7s, mythicBreathe 2.8s ease-in-out infinite 1s; backface-visibility:hidden; }
 @keyframes revealInMythic{
-  0%{ opacity:0; transform:scale(.5) translateY(30px) rotateY(-130deg); }
-  55%{ opacity:1; transform:scale(1.05) translateY(-6px) rotateY(20deg); }
-  100%{ opacity:1; transform:scale(1) translateY(0) rotateY(0deg); }
+  0%{ opacity:0; transform:scale(.4) translateY(40px) rotate3d(0.4,1,0,-160deg); }
+  55%{ opacity:1; transform:scale(1.08) translateY(-8px) rotate3d(0.4,1,0,25deg); }
+  75%{ transform:scale(.97) translateY(2px) rotate3d(0.4,1,0,-8deg); }
+  100%{ opacity:1; transform:scale(1) translateY(0) rotate3d(0.4,1,0,0deg); }
 }
-.reveal-card.rarity-bumhole{ background:linear-gradient(135deg, var(--c-bumhole), var(--c-bumhole-2), #d9b45c, var(--c-bumhole-2)); background-size:400% 400%; animation:revealInBumhole .8s cubic-bezier(.34,1.56,.64,1) forwards, holoShift 1.6s linear infinite 0.7s, bumholeWobbleCard 2s ease-in-out infinite 0.7s; position:relative; }
+@keyframes mythicBreathe{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.025); } }
+.reveal-card.rarity-mythic::after{
+  content:''; position:absolute; inset:-55px; z-index:-1; border-radius:50%;
+  background:conic-gradient(from 0deg, #ff6ec7, #ffd23c, #6effa1, #5ae2ff, #b06eff, #ff6ec7);
+  filter:blur(20px); opacity:0; pointer-events:none;
+  animation:mythicPortalSpin 2.2s linear infinite .75s, mythicPortalFade .35s ease forwards .75s;
+}
+@keyframes mythicPortalSpin{ from{ transform:rotate(0deg) scale(1); } to{ transform:rotate(-360deg) scale(1.08); } }
+@keyframes mythicPortalFade{ from{ opacity:0; } to{ opacity:.6; } }
+
+/* BUMHOLE — squishy, wobbly, and it starts raining poop */
+.reveal-card.rarity-bumhole{ background:linear-gradient(135deg, var(--c-bumhole), var(--c-bumhole-2), #d9b45c, var(--c-bumhole-2)); background-size:400% 400%; animation:revealInBumhole .9s cubic-bezier(.34,1.56,.64,1) forwards, holoShift 1.3s linear infinite 0.7s, bumholeWobbleCard 1.4s ease-in-out infinite 0.7s; position:relative; }
 @keyframes revealInBumhole{
-  0%{ opacity:0; transform:scale(.4) translateY(30px); }
-  50%{ opacity:1; transform:scale(1.12,.88) translateY(4px); }
-  68%{ transform:scale(.94,1.08) translateY(-6px); }
-  84%{ transform:scale(1.04,.97) translateY(2px); }
-  100%{ opacity:1; transform:scale(1,1) translateY(0); }
+  0%{ opacity:0; transform:scale(.3) translateY(40px) rotate(0deg); }
+  40%{ opacity:1; transform:scale(1.18,.75) translateY(6px) rotate(-6deg); }
+  55%{ transform:scale(.85,1.15) translateY(-10px) rotate(5deg); }
+  70%{ transform:scale(1.08,.92) translateY(4px) rotate(-3deg); }
+  85%{ transform:scale(.96,1.04) translateY(-2px) rotate(2deg); }
+  100%{ opacity:1; transform:scale(1,1) translateY(0) rotate(0deg); }
 }
 .reveal-card.rarity-bumhole::after{
   content:'💩'; position:absolute; top:-16px; right:-10px; font-size:32px; z-index:5;
-  filter:drop-shadow(0 3px 7px rgba(0,0,0,.5)); animation:poopWiggle 1.7s ease-in-out infinite;
+  filter:drop-shadow(0 3px 7px rgba(0,0,0,.5)); animation:poopWiggle 1s ease-in-out infinite;
 }
 @keyframes bumholeWobbleCard{
-  0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole), 0 0 26px rgba(121,78,35,.4); }
-  50%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole-2), 0 0 44px rgba(121,78,35,.7); }
+  0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole), 0 0 26px rgba(121,78,35,.4); transform:rotate(0deg) skewX(0deg); }
+  25%{ box-shadow:var(--shadow-lg), 0 0 0 4px var(--c-bumhole-2), 0 0 42px rgba(121,78,35,.7); transform:rotate(-1.6deg) skewX(-1deg); }
+  50%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole), 0 0 30px rgba(121,78,35,.5); transform:rotate(0deg) skewX(0deg); }
+  75%{ box-shadow:var(--shadow-lg), 0 0 0 4px var(--c-bumhole-2), 0 0 46px rgba(121,78,35,.75); transform:rotate(1.6deg) skewX(1deg); }
 }
+
+/* LEGENDARY — a golden sunburst halo spins up behind the card */
 .reveal-card.rarity-legendary{ animation:revealInHigh .85s cubic-bezier(.15,1.4,.3,1) forwards, legendaryGlowCard 2.2s ease-in-out infinite 0.7s; }
 @keyframes revealInHigh{
   0%{ opacity:0; transform:scale(.55) translateY(40px); filter:brightness(1); }
@@ -802,6 +925,14 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-legendary), 0 0 26px rgba(255,201,60,.4); }
   50%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-legendary-2), 0 0 44px rgba(255,201,60,.7); }
 }
+.reveal-card.rarity-legendary::after{
+  content:''; position:absolute; inset:-45px; z-index:-1; border-radius:50%;
+  background:repeating-conic-gradient(from 0deg, rgba(255,201,60,.55) 0deg 4deg, transparent 4deg 22deg);
+  opacity:0; pointer-events:none;
+  animation:legendaryHaloSpin 3s linear infinite .7s, legendaryHaloFade .35s ease forwards .7s;
+}
+@keyframes legendaryHaloSpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+@keyframes legendaryHaloFade{ from{ opacity:0; } to{ opacity:.85; } }
 @keyframes mythicRing{
   0%{ box-shadow:var(--shadow-lg), 0 0 0 3px #ff6ec7, 0 0 34px rgba(255,110,199,.5); }
   20%{ box-shadow:var(--shadow-lg), 0 0 0 3px #ffd23c, 0 0 34px rgba(255,210,60,.5); }
@@ -811,6 +942,22 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   100%{ box-shadow:var(--shadow-lg), 0 0 0 3px #ff6ec7, 0 0 34px rgba(255,110,199,.5); }
 }
 @keyframes holoShift{ 0%{ background-position:0% 50%; } 100%{ background-position:100% 50%; } }
+
+/* falling/rising emoji particles spawned by JS for legendary/mythic/bumhole flair */
+.emoji-fall{ position:absolute; top:-40px; opacity:0; will-change:transform, opacity; pointer-events:none; }
+@keyframes emojiFallDown{
+  0%{ opacity:0; transform:translateY(0) rotate(0deg); }
+  8%{ opacity:1; }
+  92%{ opacity:1; }
+  100%{ opacity:0; transform:translateY(115vh) rotate(340deg); }
+}
+.emoji-rise{ position:absolute; bottom:-40px; opacity:0; will-change:transform, opacity; pointer-events:none; }
+@keyframes emojiRiseUp{
+  0%{ opacity:0; transform:translateY(0) scale(.7) rotate(0deg); }
+  10%{ opacity:1; }
+  85%{ opacity:1; }
+  100%{ opacity:0; transform:translateY(-70vh) scale(1.2) rotate(160deg); }
+}
 
 /* extra flair layers, toggled by JS adding classes to overlay */
 .rays{
@@ -870,8 +1017,12 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .close-open-btn.show{ opacity:1; pointer-events:auto; }
 
 /* ============================= EMPTY STATES ============================= */
-.empty-state{ text-align:center; padding:60px 20px; color:var(--text-muted); }
-.empty-state .big{ font-size:46px; margin-bottom:10px; }
+.empty-state{
+  text-align:center; padding:60px 20px; color:var(--text-muted);
+  animation:viewIn .4s cubic-bezier(.2,.9,.25,1);
+}
+.empty-state .big{ font-size:46px; margin-bottom:10px; animation:emptyFloat 3s ease-in-out infinite; display:inline-block; }
+@keyframes emptyFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
 
 /* ============================= RESPONSIVE ============================= */
 @media (max-width:640px){
@@ -897,6 +1048,30 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     <div class="lock-error" id="lockError"></div>
   </div>
 </div>
+
+<!-- Second factor: arrow-sequence lock. Shown only after the code is correct.
+     A wrong arrow sends the person all the way back to the code screen. -->
+<div class="lock-screen" id="arrowScreen" style="display:none">
+  <div class="lock-card arrow-card" id="arrowCard">
+    <div class="lock-emoji">🕹️</div>
+    <h1 class="lock-title"><span class="peel">🔐</span>Step 2 of 2</h1>
+    <p class="lock-sub">Enter the arrow code — click below or use your keyboard</p>
+    <div class="arrow-dots" id="arrowDots"></div>
+    <div class="dpad" id="dpad">
+      <button class="dpad-btn dpad-up" data-dir="up" aria-label="Up">▲</button>
+      <div class="dpad-mid">
+        <button class="dpad-btn dpad-left" data-dir="left" aria-label="Left">◀</button>
+        <div class="dpad-center"></div>
+        <button class="dpad-btn dpad-right" data-dir="right" aria-label="Right">▶</button>
+      </div>
+      <button class="dpad-btn dpad-down" data-dir="down" aria-label="Down">▼</button>
+    </div>
+    <div class="lock-error" id="arrowError"></div>
+  </div>
+</div>
+
+<!-- Floating fullscreen re-entry button -->
+<button class="fullscreen-fab" id="fullscreenFab" title="Enter fullscreen" aria-label="Toggle fullscreen" style="display:none">⛶</button>
 
 <header class="app-header">
   <div class="brand"><span class="peel">👃</span><b>Snotty</b><span class="label">BananaPacks</span></div>
@@ -934,7 +1109,13 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     <div class="section-head">
       <h1>Inventory</h1>
     </div>
-    <div id="inventoryGrid" class="grid"></div>
+    <div class="toolbar">
+      <div class="toolbar-row">
+        <span class="inv-sort-label">Sort each pack by</span>
+        <div class="sort-seg" id="invSortSeg"></div>
+      </div>
+    </div>
+    <div id="inventoryGrid" class="inventory-groups"></div>
     <div class="odds-card">
       <h3>Drop rates</h3>
       <div class="odds-grid" id="oddsListInventory"></div>
@@ -1041,20 +1222,57 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 (function(){
 "use strict";
 
-/* ======================= ACCESS GATE ======================= */
-/* No code is remembered between visits — the code must be re-entered every time. */
+/* ======================= ACCESS GATE (2-step) ======================= */
+/* Nothing is remembered between visits — both steps must be re-entered every time. */
 (function(){
-  const ACCESS_CODE = "WrenIsBetterThanOrinAtEverything123";
-  const lockScreen = document.getElementById("lockScreen");
-  const lockInput  = document.getElementById("lockInput");
-  const lockBtn    = document.getElementById("lockBtn");
-  const lockError  = document.getElementById("lockError");
-  const lockCard   = document.getElementById("lockCard");
+  const ACCESS_CODE  = "WrenIsBetterThanOrinAtEverything123";
+  const ARROW_CODE   = ["up","up","up","up","down","up"];
+
+  const lockScreen  = document.getElementById("lockScreen");
+  const lockInput   = document.getElementById("lockInput");
+  const lockBtn     = document.getElementById("lockBtn");
+  const lockError   = document.getElementById("lockError");
+  const lockCard    = document.getElementById("lockCard");
+
+  const arrowScreen = document.getElementById("arrowScreen");
+  const arrowCard   = document.getElementById("arrowCard");
+  const arrowError  = document.getElementById("arrowError");
+  const arrowDots   = document.getElementById("arrowDots");
+  const dpad        = document.getElementById("dpad");
+  const fullscreenFab = document.getElementById("fullscreenFab");
+
+  let arrowProgress = 0;
+
+  function renderArrowDots(){
+    arrowDots.innerHTML = ARROW_CODE.map((_,i)=>
+      `<span class="arrow-dot${i<arrowProgress?" filled":""}"></span>`
+    ).join("");
+  }
+
+  function showArrowScreen(){
+    arrowProgress = 0;
+    renderArrowDots();
+    arrowError.textContent = "";
+    arrowError.classList.remove("show");
+    lockScreen.style.display = "none";
+    arrowScreen.style.display = "flex";
+    arrowScreen.classList.remove("unlocked");
+  }
+
+  function backToCodeScreen(message){
+    arrowScreen.classList.add("unlocked");
+    setTimeout(()=>{ arrowScreen.style.display = "none"; }, 400);
+    lockScreen.style.display = "flex";
+    lockScreen.classList.remove("unlocked");
+    lockInput.value = "";
+    lockError.textContent = message || "";
+    lockError.classList.toggle("show", !!message);
+    lockInput.focus();
+  }
 
   function tryUnlock(){
     if(lockInput.value === ACCESS_CODE){
-      lockScreen.classList.add("unlocked");
-      setTimeout(()=>{ lockScreen.style.display = "none"; }, 400);
+      showArrowScreen();
     } else {
       lockError.textContent = "Wrong code — try again.";
       lockError.classList.add("show");
@@ -1071,6 +1289,91 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     if(e.key === "Enter") tryUnlock();
   });
   lockInput.focus();
+
+  /* ----- step 2: arrow sequence ----- */
+
+  function requestFullscreenSafely(){
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if(req){
+      try{ req.call(el).catch(()=>{}); }catch(e){ /* fullscreen not available/allowed */ }
+    }
+  }
+
+  function grantAccess(){
+    arrowScreen.classList.add("unlocked");
+    setTimeout(()=>{ arrowScreen.style.display = "none"; }, 400);
+    requestFullscreenSafely();
+    fullscreenFab.style.display = "flex";
+    updateFullscreenFab();
+  }
+
+  function submitArrow(dir, btnEl){
+    if(arrowScreen.style.display === "none") return;
+    if(dir === ARROW_CODE[arrowProgress]){
+      arrowProgress++;
+      renderArrowDots();
+      if(btnEl){
+        btnEl.classList.add("pressed");
+        setTimeout(()=>btnEl.classList.remove("pressed"), 150);
+      }
+      if(arrowProgress >= ARROW_CODE.length){
+        Sound.claim();
+        grantAccess();
+      } else {
+        Sound.pillSelect(arrowProgress);
+      }
+    } else {
+      if(btnEl){
+        btnEl.classList.remove("wrong");
+        void btnEl.offsetWidth;
+        btnEl.classList.add("wrong");
+      }
+      arrowCard.classList.remove("shake-lock");
+      void arrowCard.offsetWidth;
+      arrowCard.classList.add("shake-lock");
+      backToCodeScreen("Wrong arrow code — enter the access code again.");
+    }
+  }
+
+  dpad.querySelectorAll(".dpad-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      Sound.click();
+      submitArrow(btn.dataset.dir, btn);
+    });
+  });
+
+  document.addEventListener("keydown", (e)=>{
+    if(arrowScreen.style.display !== "flex") return;
+    const map = { ArrowUp:"up", ArrowDown:"down", ArrowLeft:"left", ArrowRight:"right" };
+    const dir = map[e.key];
+    if(!dir) return;
+    e.preventDefault();
+    const btnEl = dpad.querySelector(`.dpad-btn[data-dir="${dir}"]`);
+    Sound.click();
+    submitArrow(dir, btnEl);
+  });
+
+  /* ----- fullscreen fab ----- */
+
+  function isFullscreen(){
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+  function updateFullscreenFab(){
+    fullscreenFab.textContent = isFullscreen() ? "⤢" : "⛶";
+    fullscreenFab.title = isFullscreen() ? "Exit fullscreen" : "Enter fullscreen";
+  }
+  fullscreenFab.addEventListener("click", ()=>{
+    Sound.click();
+    if(isFullscreen()){
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if(exit) exit.call(document).catch(()=>{});
+    } else {
+      requestFullscreenSafely();
+    }
+  });
+  document.addEventListener("fullscreenchange", updateFullscreenFab);
+  document.addEventListener("webkitfullscreenchange", updateFullscreenFab);
 })();
 
 /* ======================= DATA (expand here later) ======================= */
@@ -1522,44 +1825,87 @@ renderOddsInto("oddsListIndex");
 
 /* ======================= INVENTORY VIEW ======================= */
 
+let currentInventorySort = "rarity"; // "rarity" | "number" — applied within each pack group
+
+function renderInvSortSeg(){
+  const wrap = document.getElementById("invSortSeg");
+  const options = [{ key:"rarity", label:"Rarity" }, { key:"number", label:"Number" }];
+  wrap.innerHTML = options.map(o=>{
+    const active = currentInventorySort===o.key;
+    return `<button class="sort-seg-btn${active?" active":""}" data-value="${o.key}">${o.label}</button>`;
+  }).join("");
+  wrap.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(btn.dataset.value===currentInventorySort) return;
+      currentInventorySort = btn.dataset.value;
+      Sound.pillSelect();
+      renderInvSortSeg();
+      renderInventory();
+    });
+  });
+}
+
+function sortCharList(list){
+  if(currentInventorySort==="number"){
+    return list.slice().sort((a,b)=> a.num - b.num);
+  }
+  return list.slice().sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
+}
+
 function renderInventory(){
+  renderInvSortSeg();
   const grid = document.getElementById("inventoryGrid");
   const ownedIds = Object.keys(inventory).filter(id=>inventory[id]>0);
 
   if(ownedIds.length===0){
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+    grid.innerHTML = `<div class="empty-state">
       <div class="big">📦</div>
       <div>No characters yet — open your first pack!</div>
     </div>`;
     return;
   }
 
-  const sorted = ownedIds
-    .map(id=>charById(id))
-    .filter(Boolean)
-    .sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
+  const ownedChars = ownedIds.map(id=>charById(id)).filter(Boolean);
 
-  grid.innerHTML = sorted.map((c,i)=>{
-    const r = RARITIES[c.rarity];
-    return `<div class="char-tile clickable rarity-${c.rarity}"${tileDelay(i)} data-id="${c.id}">
-      <div class="num-tag">${formatNum(c.num)}</div>
-      <div class="qty-tag">x${inventory[c.id]}</div>
-      <div class="char-visual" data-visual="${c.id}">
-        <img alt="">
-        <div class="fallback"></div>
+  // Group owned characters by their pack, in PACKS order; skip packs with nothing owned.
+  const groups = PACKS
+    .map(pack=>({ pack, chars: sortCharList(ownedChars.filter(c=>c.packId===pack.id)) }))
+    .filter(g=>g.chars.length>0);
+
+  grid.innerHTML = groups.map(g=>`
+    <div class="inv-group" data-pack-group="${g.pack.id}">
+      <div class="inv-group-head">
+        <h2>${g.pack.name}</h2>
+        <span class="inv-group-count">${g.chars.length} owned</span>
       </div>
-      <div class="cname">${c.name}</div>
-      <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
-    </div>`;
-  }).join("");
+      <div class="grid" data-inv-grid="${g.pack.id}"></div>
+    </div>
+  `).join("");
 
-  sorted.forEach(c=>{
-    const container = grid.querySelector(`[data-visual="${c.id}"]`);
-    wireVisual(container, c);
-  });
+  groups.forEach(g=>{
+    const gridEl = grid.querySelector(`[data-inv-grid="${g.pack.id}"]`);
+    gridEl.innerHTML = g.chars.map((c,i)=>{
+      const r = RARITIES[c.rarity];
+      return `<div class="char-tile clickable rarity-${c.rarity}"${tileDelay(i)} data-id="${c.id}">
+        <div class="num-tag">${formatNum(c.num)}</div>
+        <div class="qty-tag">x${inventory[c.id]}</div>
+        <div class="char-visual" data-visual="${c.id}">
+          <img alt="">
+          <div class="fallback"></div>
+        </div>
+        <div class="cname">${c.name}</div>
+        <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
+      </div>`;
+    }).join("");
 
-  grid.querySelectorAll(".char-tile").forEach(tile=>{
-    tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id, sorted); });
+    g.chars.forEach(c=>{
+      const container = gridEl.querySelector(`[data-visual="${c.id}"]`);
+      wireVisual(container, c);
+    });
+
+    gridEl.querySelectorAll(".char-tile").forEach(tile=>{
+      tile.addEventListener("click", ()=>{ Sound.click(); openPreview(tile.dataset.id, g.chars); });
+    });
   });
 }
 
@@ -1985,6 +2331,7 @@ function resetOverlayVisuals(){
   overlay.classList.remove("shake","shake-hard");
   statusText.textContent = "Opening...";
   revealRarity.classList.remove("glitch-text","go");
+  overlay.querySelectorAll(".emoji-layer").forEach(el=>el.remove());
 }
 
 function scheduleHeartbeats(chargeTime){
@@ -2116,6 +2463,34 @@ function setRevealBanner(rarity){
   }
 }
 
+// Spawns a burst of floating emoji particles inside the opening overlay —
+// falling from the top (direction:"fall") or rising from the bottom
+// (direction:"rise") — used to give legendary/mythic/bumhole reveals extra
+// personality beyond the shared confetti/orbiter effects.
+function spawnEmojiParticles(emoji, count, seconds, direction){
+  const layer = document.createElement("div");
+  layer.className = "emoji-layer";
+  layer.style.position = "absolute";
+  layer.style.inset = "0";
+  layer.style.overflow = "hidden";
+  layer.style.pointerEvents = "none";
+  layer.style.zIndex = "6";
+  overlay.appendChild(layer);
+  for(let i=0;i<count;i++){
+    const el = document.createElement("div");
+    el.textContent = emoji;
+    el.className = direction==="rise" ? "emoji-rise" : "emoji-fall";
+    el.style.left = (Math.random()*100)+"%";
+    el.style.fontSize = (16+Math.random()*22)+"px";
+    const dur = 1.6+Math.random()*1.6;
+    const delay = Math.random()*Math.max(seconds-2,0.2);
+    el.style.animation = (direction==="rise" ? "emojiRiseUp" : "emojiFallDown")+" "+dur.toFixed(2)+"s ease-in "+delay.toFixed(2)+"s forwards";
+    layer.appendChild(el);
+  }
+  const t = setTimeout(()=>{ layer.remove(); }, (seconds+3)*1000);
+  extraTimers.push(t);
+}
+
 function runRarityFlair(rarity, remaining){
   const info = RARITIES[rarity];
   const rect = overlay.getBoundingClientRect();
@@ -2145,11 +2520,14 @@ function runRarityFlair(rarity, remaining){
       overlay.classList.add("shake");
       burstConfetti({ colors:[info.color, info.color2, "#fff8dc"], count:200, spread:100, power:13 });
       extraTimers.push(setTimeout(()=>burstConfetti({ colors:[info.color, "#fff"], count:120, spread:100, power:12 }), 900));
+      spawnEmojiParticles("✨", 16, remaining/1000, "rise");
       break;
     case "mythic":
       raysEl.classList.add("spin");
       spawnOrbiters(14, [info.color, info.color2, "#fff"], 150);
       burstConfetti({ colors:[info.color, info.color2, "#fff", "#ffd23f"], count:160, spread:110, power:12 });
+      spawnEmojiParticles("🌀", 10, remaining/1000, "rise");
+      spawnEmojiParticles("✦", 14, remaining/1000, "fall");
       extraTimers.push(setTimeout(()=>{ overlay.classList.add("shake"); burstConfetti({ colors:[info.color, info.color2, "#7ed957", "#ffd23f"], count:220, spread:130, power:14 }); Sound.fanfare("mythic"); }, 1600));
       extraTimers.push(setTimeout(()=>{ burstConfetti({ colors:["#fff", info.color, info.color2], count:260, spread:140, power:15 }); Sound.fanfare("mythic"); }, 3400));
       break;
@@ -2162,11 +2540,13 @@ function runRarityFlair(rarity, remaining){
       revealRarity.classList.add("glitch-text", "go");
       overlay.classList.add("shake-hard");
       burstConfetti({ colors:[info.color, info.color2, "#ffd23f"], count:180, spread:120, power:13 });
+      spawnEmojiParticles("💩", 22, remaining/1000, "fall");
       // escalating gag bursts across the very long duration
       [1500,3200,5000,6800,8600,10200,11500].forEach((delay,i)=>{
         extraTimers.push(setTimeout(()=>{
           burstConfetti({ colors:["#ffd23f","#7ed957","#ff4fa3","#3acbff", info.color], count:180+i*20, spread:120+i*5, power:13+i });
           Sound.honk(i);
+          spawnEmojiParticles("💩", 8, 3, "fall");
         }, delay));
       });
       extraTimers.push(setTimeout(()=>{ overlay.classList.remove("shake-hard"); overlay.classList.add("shake"); }, remaining-1500));
@@ -2197,6 +2577,7 @@ function claimCharacter(){
 function closeOverlay(){
   clearExtraTimers();
   overlay.classList.remove("show");
+  overlay.querySelectorAll(".emoji-layer").forEach(el=>el.remove());
   document.querySelectorAll(".pack-open-btn, .pack-info-btn").forEach(b=>b.disabled = false);
   pendingCharacter = null;
   pendingRarity = null;
