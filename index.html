@@ -566,11 +566,16 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   50%{ box-shadow:0 0 0 2px var(--c-bumhole-2), 0 0 26px rgba(121,78,35,.62); }
 }
 .char-tile.rarity-bumhole::after{
-  content:'💩'; position:absolute; top:-9px; right:-7px; font-size:19px; z-index:3;
-  filter:drop-shadow(0 2px 5px rgba(0,0,0,.45)); transform:rotate(10deg);
-  animation:poopWiggle 1.7s ease-in-out infinite;
+  content:''; position:absolute; top:-8px; right:-6px; width:16px; height:16px; z-index:3;
+  background:linear-gradient(140deg, var(--c-bumhole), var(--c-bumhole-2));
+  border-radius:40% 60% 55% 45% / 55% 45% 60% 40%;
+  box-shadow:0 3px 6px rgba(0,0,0,.4);
+  animation:blobWobble 1.7s ease-in-out infinite;
 }
-@keyframes poopWiggle{ 0%,100%{ transform:rotate(8deg) scale(1); } 50%{ transform:rotate(-8deg) scale(1.1); } }
+@keyframes blobWobble{
+  0%,100%{ border-radius:40% 60% 55% 45% / 55% 45% 60% 40%; transform:rotate(6deg) scale(1); }
+  50%{ border-radius:55% 45% 40% 60% / 45% 60% 40% 55%; transform:rotate(-6deg) scale(1.1); }
+}
 .char-visual{
   width:100%; aspect-ratio:1/1; border-radius:14px; overflow:hidden; margin-bottom:10px;
   display:flex; align-items:center; justify-content:center; position:relative;
@@ -780,7 +785,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   to{ opacity:1; transform:translateY(0) scale(1); }
 }
 
-/* UNCOMMON — a cheerful little bounce with a twinkle */
+/* UNCOMMON — a cheerful little bounce with an expanding pulse ring */
 .reveal-card.rarity-uncommon.enter{ animation:revealInUncommon .6s cubic-bezier(.34,1.56,.64,1) forwards; }
 @keyframes revealInUncommon{
   0%{ opacity:0; transform:scale(.7) translateY(26px); }
@@ -788,11 +793,14 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   100%{ opacity:1; transform:scale(1) translateY(0); }
 }
 .reveal-card.rarity-uncommon::after{
-  content:'✦'; position:absolute; top:-10px; right:14px; font-size:20px; color:var(--c-uncommon);
-  opacity:0; animation:twinkle 1.4s ease-in-out infinite .6s;
-  text-shadow:0 0 10px rgba(63,224,138,.7); pointer-events:none;
+  content:''; position:absolute; inset:0; border-radius:inherit; z-index:-1; pointer-events:none;
+  border:3px solid var(--c-uncommon); opacity:0;
+  animation:pulseRing 1.1s ease-out infinite .6s;
 }
-@keyframes twinkle{ 0%,100%{ opacity:0; transform:scale(.6) rotate(0deg); } 50%{ opacity:1; transform:scale(1.15) rotate(20deg); } }
+@keyframes pulseRing{
+  0%{ transform:scale(1); opacity:.8; }
+  100%{ transform:scale(1.22); opacity:0; }
+}
 
 /* RARE — a 3D card flip, like it's turning to face you */
 .reveal-card.rarity-rare.enter{ animation:revealInRare .75s cubic-bezier(.2,.9,.25,1) forwards; }
@@ -814,6 +822,21 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 @keyframes epicFlicker{
   0%,18%,22%,54%,58%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-epic), 0 0 24px rgba(185,131,255,.5); }
   20%,56%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-epic-2), 0 0 8px rgba(185,131,255,.15); }
+}
+.reveal-card.rarity-epic::after{
+  content:''; position:absolute; z-index:4; pointer-events:none; opacity:0;
+  top:-6%; left:8%; width:36px; height:112%;
+  background:linear-gradient(180deg, transparent, #fff 45%, #fff 55%, transparent);
+  clip-path:polygon(40% 0%, 60% 0%, 30% 35%, 70% 40%, 20% 100%, 45% 55%, 10% 50%);
+  filter:drop-shadow(0 0 8px #fff) drop-shadow(0 0 16px var(--c-epic));
+  animation:epicCrack .5s ease-out .3s;
+}
+@keyframes epicCrack{
+  0%{ opacity:0; transform:scaleY(.4) translateX(-10px); }
+  15%{ opacity:1; transform:scaleY(1) translateX(0); }
+  30%{ opacity:.2; }
+  45%{ opacity:.9; }
+  100%{ opacity:0; }
 }
 .reveal-visual{
   width:190px; height:190px; margin:0 auto 16px; border-radius:22px; overflow:hidden;
@@ -904,8 +927,16 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   100%{ opacity:1; transform:scale(1,1) translateY(0) rotate(0deg); }
 }
 .reveal-card.rarity-bumhole::after{
-  content:'💩'; position:absolute; top:-16px; right:-10px; font-size:32px; z-index:5;
-  filter:drop-shadow(0 3px 7px rgba(0,0,0,.5)); animation:poopWiggle 1s ease-in-out infinite;
+  content:''; position:absolute; top:-4px; right:24px; width:16px; height:22px; z-index:5;
+  background:linear-gradient(180deg, var(--c-bumhole), var(--c-bumhole-2));
+  border-radius:50% 50% 50% 50% / 65% 65% 35% 35%;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.5));
+  animation:dripFall 1.3s ease-in infinite;
+}
+@keyframes dripFall{
+  0%{ transform:translateY(-8px) scaleY(.75); opacity:.85; }
+  65%{ transform:translateY(14px) scaleY(1.2); opacity:1; }
+  100%{ transform:translateY(34px) scaleY(.55); opacity:0; }
 }
 @keyframes bumholeWobbleCard{
   0%,100%{ box-shadow:var(--shadow-lg), 0 0 0 3px var(--c-bumhole), 0 0 26px rgba(121,78,35,.4); transform:rotate(0deg) skewX(0deg); }
@@ -943,31 +974,30 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 }
 @keyframes holoShift{ 0%{ background-position:0% 50%; } 100%{ background-position:100% 50%; } }
 
-/* falling/rising emoji particles spawned by JS for legendary/mythic/bumhole flair */
-.emoji-fall{ position:absolute; top:-40px; opacity:0; will-change:transform, opacity; pointer-events:none; }
-@keyframes emojiFallDown{
+/* falling/rising CSS-shape particles spawned by JS for legendary/mythic/bumhole
+   flair — plain colored shapes, never emoji or text glyphs. */
+.particle{ position:absolute; opacity:0; will-change:transform, opacity; pointer-events:none; }
+.particle.shape-circle{ border-radius:50%; }
+.particle.shape-diamond{ clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); }
+.particle.shape-spark{ clip-path:polygon(50% 0%, 63% 38%, 100% 50%, 63% 62%, 50% 100%, 37% 62%, 0% 50%, 37% 38%); }
+.particle.shape-drop{ border-radius:50% 50% 50% 0; }
+
+.particle-fall{ top:-40px; }
+@keyframes particleFallDown{
   0%{ opacity:0; transform:translateY(0) rotate(0deg); }
   8%{ opacity:1; }
   92%{ opacity:1; }
-  100%{ opacity:0; transform:translateY(115vh) rotate(340deg); }
+  100%{ opacity:0; transform:translateY(115vh) rotate(300deg); }
 }
-.emoji-rise{ position:absolute; bottom:-40px; opacity:0; will-change:transform, opacity; pointer-events:none; }
-@keyframes emojiRiseUp{
-  0%{ opacity:0; transform:translateY(0) scale(.7) rotate(0deg); }
+.particle-rise{ bottom:-40px; }
+@keyframes particleRiseUp{
+  0%{ opacity:0; transform:translateY(0) scale(.6) rotate(0deg); }
   10%{ opacity:1; }
   85%{ opacity:1; }
-  100%{ opacity:0; transform:translateY(-70vh) scale(1.2) rotate(160deg); }
+  100%{ opacity:0; transform:translateY(-70vh) scale(1.15) rotate(150deg); }
 }
 
 /* extra flair layers, toggled by JS adding classes to overlay */
-.rays{
-  position:absolute; width:900px; height:900px; border-radius:50%; opacity:0; pointer-events:none;
-  background:repeating-conic-gradient(from 0deg, rgba(255,255,255,.35) 0deg 3deg, transparent 3deg 18deg);
-}
-.rays.spin{ animation:raySpin 4s linear infinite, rayFade .4s ease forwards; opacity:1; }
-@keyframes raySpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
-@keyframes rayFade{ from{ opacity:0; } to{ opacity:.5; } }
-
 .shake{ animation:screenShake .4s ease-in-out; }
 .shake-hard{ animation:screenShakeHard .55s ease-in-out infinite; }
 @keyframes screenShake{ 0%,100%{ transform:translate(0,0); } 20%{ transform:translate(-6px,3px); } 40%{ transform:translate(6px,-3px); } 60%{ transform:translate(-4px,4px); } 80%{ transform:translate(4px,-2px); } }
@@ -1185,7 +1215,6 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 <div class="opening-overlay" id="openingOverlay">
   <div class="burst-flash" id="burstFlash"></div>
   <div class="shockwave" id="shockwave"></div>
-  <div class="rays" id="rays"></div>
   <div class="orbit-wrap" id="orbitWrap"></div>
   <div class="legend-banner" id="legendBanner"></div>
   <canvas class="confetti-canvas" id="confettiCanvas"></canvas>
@@ -1391,6 +1420,7 @@ const RARITIES = {
 const PACKS = [
   { id:"orin-pack", name:"Orin Pack", color:"#FF8A3D", color2:"#E8590C" },
   { id:"wren-pack", name:"Wren Pack", color:"#A855F7", color2:"#6D28D9" },
+  { id:"mother-pack", name:"Mother Pack", color:"#2E9B5F", color2:"#0B3D24" },
 ];
 
 // Add new characters here later; everything else adapts automatically.
@@ -1474,6 +1504,10 @@ const CHARACTERS = [
   { id:"make-a-wish-wren",   name:"Make A Wish Wren",   rarity:"common",   packId:"wren-pack", image:"MakeAWishWren.jpg",    num:32 },
   { id:"sock-puppet-wren",   name:"Sock Puppet Wren",   rarity:"epic",     packId:"wren-pack", image:"SockPuppetWren.jpg",   num:33 },
   { id:"santa-wren",         name:"Santa Wren",         rarity:"rare",     packId:"wren-pack", image:"SantaWren.jpg",        num:34 },
+
+  { id:"mother",             name:"Mother",             rarity:"common",   packId:"mother-pack", image:"Mother.jpg",         num:1 },
+  { id:"bald-mother",        name:"Bald Mother",        rarity:"uncommon", packId:"mother-pack", image:"BaldMother.jpg",     num:2 },
+  { id:"angry-mother",       name:"Angry Mother",       rarity:"common",   packId:"mother-pack", image:"AngryMother.jpg",    num:3 },
 ];
 
 const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
@@ -2298,7 +2332,6 @@ const claimBtn      = document.getElementById("claimBtn");
 const burstFlash    = document.getElementById("burstFlash");
 const shockwaveEl   = document.getElementById("shockwave");
 const sparkLayer    = document.getElementById("sparkLayer");
-const raysEl        = document.getElementById("rays");
 const orbitWrap     = document.getElementById("orbitWrap");
 const legendBanner  = document.getElementById("legendBanner");
 
@@ -2352,14 +2385,13 @@ function resetOverlayVisuals(){
   burstFlash.className = "burst-flash";
   shockwaveEl.className = "shockwave";
   sparkLayer.innerHTML = "";
-  raysEl.className = "rays";
   legendBanner.className = "legend-banner";
   legendBanner.textContent = "";
   orbitWrap.innerHTML = "";
   overlay.classList.remove("shake","shake-hard");
   statusText.textContent = "Opening...";
   revealRarity.classList.remove("glitch-text","go");
-  overlay.querySelectorAll(".emoji-layer").forEach(el=>el.remove());
+  overlay.querySelectorAll(".particle-layer").forEach(el=>el.remove());
 }
 
 function scheduleHeartbeats(chargeTime){
@@ -2491,13 +2523,13 @@ function setRevealBanner(rarity){
   }
 }
 
-// Spawns a burst of floating emoji particles inside the opening overlay —
-// falling from the top (direction:"fall") or rising from the bottom
-// (direction:"rise") — used to give legendary/mythic/bumhole reveals extra
-// personality beyond the shared confetti/orbiter effects.
-function spawnEmojiParticles(emoji, count, seconds, direction){
+// Spawns a burst of floating particles — plain colored CSS shapes (never
+// emoji or text glyphs) — falling from the top (direction:"fall") or rising
+// from the bottom (direction:"rise"). Used to give legendary/mythic/bumhole
+// reveals extra personality beyond the shared confetti/orbiter effects.
+function spawnParticles({ shape="circle", colors=["#fff"], count=12, seconds=2, direction="fall", minSize=10, maxSize=20 }){
   const layer = document.createElement("div");
-  layer.className = "emoji-layer";
+  layer.className = "particle-layer";
   layer.style.position = "absolute";
   layer.style.inset = "0";
   layer.style.overflow = "hidden";
@@ -2506,13 +2538,17 @@ function spawnEmojiParticles(emoji, count, seconds, direction){
   overlay.appendChild(layer);
   for(let i=0;i<count;i++){
     const el = document.createElement("div");
-    el.textContent = emoji;
-    el.className = direction==="rise" ? "emoji-rise" : "emoji-fall";
+    const size = minSize + Math.random()*(maxSize-minSize);
+    const color = colors[Math.floor(Math.random()*colors.length)];
+    el.className = "particle shape-"+shape+" "+(direction==="rise" ? "particle-rise" : "particle-fall");
     el.style.left = (Math.random()*100)+"%";
-    el.style.fontSize = (16+Math.random()*22)+"px";
+    el.style.width = size+"px";
+    el.style.height = size+"px";
+    el.style.background = color;
+    el.style.boxShadow = "0 0 "+(size*0.7).toFixed(0)+"px "+color;
     const dur = 1.6+Math.random()*1.6;
     const delay = Math.random()*Math.max(seconds-2,0.2);
-    el.style.animation = (direction==="rise" ? "emojiRiseUp" : "emojiFallDown")+" "+dur.toFixed(2)+"s ease-in "+delay.toFixed(2)+"s forwards";
+    el.style.animation = (direction==="rise" ? "particleRiseUp" : "particleFallDown")+" "+dur.toFixed(2)+"s ease-in "+delay.toFixed(2)+"s forwards";
     layer.appendChild(el);
   }
   const t = setTimeout(()=>{ layer.remove(); }, (seconds+3)*1000);
@@ -2526,41 +2562,44 @@ function runRarityFlair(rarity, remaining){
 
   switch(rarity){
     case "common":
+      // quiet and understated — a small confetti puff, nothing else.
       burstConfetti({ colors:[info.color, "#ffffff"], count:60, spread:60, power:9 });
       break;
     case "uncommon":
+      // a cheerful little pop — bigger confetti puff, the pulse ring does the rest.
       burstConfetti({ colors:[info.color, info.color2, "#ffffff"], count:90, spread:70, power:10 });
       break;
     case "rare":
-      raysEl.classList.add("spin");
+      // the 3D flip is the star here — just a screen shake to sell the landing.
       burstConfetti({ colors:[info.color, info.color2, "#ffffff"], count:120, spread:80, power:11 });
       overlay.classList.add("shake");
       break;
     case "epic":
-      raysEl.classList.add("spin");
+      // static-electric orbiting sparks to match the lightning-crack + flicker.
       spawnOrbiters(8, [info.color, info.color2, "#ffffff"], 110);
       burstConfetti({ colors:[info.color, info.color2, "#ffffff"], count:150, spread:90, power:12 });
       overlay.classList.add("shake");
       break;
     case "legendary":
-      raysEl.classList.add("spin");
+      // radiant gold — orbiting sparks + a steady rise of star-shaped sparkles.
       spawnOrbiters(10, [info.color, info.color2, "#fff5cc"], 130);
       overlay.classList.add("shake");
       burstConfetti({ colors:[info.color, info.color2, "#fff8dc"], count:200, spread:100, power:13 });
       extraTimers.push(setTimeout(()=>burstConfetti({ colors:[info.color, "#fff"], count:120, spread:100, power:12 }), 900));
-      spawnEmojiParticles("✨", 16, remaining/1000, "rise");
+      spawnParticles({ shape:"spark", colors:[info.color, info.color2, "#fff5cc"], count:16, seconds:remaining/1000, direction:"rise", minSize:10, maxSize:20 });
       break;
     case "mythic":
-      raysEl.classList.add("spin");
+      // a prismatic portal — diamonds drifting both up and down through it.
       spawnOrbiters(14, [info.color, info.color2, "#fff"], 150);
       burstConfetti({ colors:[info.color, info.color2, "#fff", "#ffd23f"], count:160, spread:110, power:12 });
-      spawnEmojiParticles("🌀", 10, remaining/1000, "rise");
-      spawnEmojiParticles("✦", 14, remaining/1000, "fall");
+      spawnParticles({ shape:"diamond", colors:["#ff6ec7","#ffd23c","#6effa1","#5ae2ff","#b06eff"], count:12, seconds:remaining/1000, direction:"rise", minSize:9, maxSize:17 });
+      spawnParticles({ shape:"diamond", colors:["#fff","#ffd23c","#5ae2ff"], count:12, seconds:remaining/1000, direction:"fall", minSize:7, maxSize:13 });
       extraTimers.push(setTimeout(()=>{ overlay.classList.add("shake"); burstConfetti({ colors:[info.color, info.color2, "#7ed957", "#ffd23f"], count:220, spread:130, power:14 }); Sound.fanfare("mythic"); }, 1600));
       extraTimers.push(setTimeout(()=>{ burstConfetti({ colors:["#fff", info.color, info.color2], count:260, spread:140, power:15 }); Sound.fanfare("mythic"); }, 3400));
       break;
     case "bumhole":
-      raysEl.classList.add("spin");
+      // chaotic and gross without any emoji — colored teardrops raining down,
+      // a hard screen shake, and the rarity label glitching.
       spawnOrbiters(20, [info.color, info.color2, "#ffd23f", "#7ed957", "#ff4fa3"], 170);
       // The glitch effect needs both "glitch-text" and "go" classes to actually
       // animate (see .glitch-text.go in CSS), and statusText is already emptied
@@ -2568,13 +2607,13 @@ function runRarityFlair(rarity, remaining){
       revealRarity.classList.add("glitch-text", "go");
       overlay.classList.add("shake-hard");
       burstConfetti({ colors:[info.color, info.color2, "#ffd23f"], count:180, spread:120, power:13 });
-      spawnEmojiParticles("💩", 22, remaining/1000, "fall");
+      spawnParticles({ shape:"drop", colors:[info.color, info.color2, "#d9b45c"], count:22, seconds:remaining/1000, direction:"fall", minSize:10, maxSize:20 });
       // escalating gag bursts across the very long duration
       [1500,3200,5000,6800,8600,10200,11500].forEach((delay,i)=>{
         extraTimers.push(setTimeout(()=>{
           burstConfetti({ colors:["#ffd23f","#7ed957","#ff4fa3","#3acbff", info.color], count:180+i*20, spread:120+i*5, power:13+i });
           Sound.honk(i);
-          spawnEmojiParticles("💩", 8, 3, "fall");
+          spawnParticles({ shape:"drop", colors:[info.color, info.color2], count:8, seconds:3, direction:"fall" });
         }, delay));
       });
       extraTimers.push(setTimeout(()=>{ overlay.classList.remove("shake-hard"); overlay.classList.add("shake"); }, remaining-1500));
@@ -2605,7 +2644,7 @@ function claimCharacter(){
 function closeOverlay(){
   clearExtraTimers();
   overlay.classList.remove("show");
-  overlay.querySelectorAll(".emoji-layer").forEach(el=>el.remove());
+  overlay.querySelectorAll(".particle-layer").forEach(el=>el.remove());
   document.querySelectorAll(".pack-open-btn, .pack-info-btn").forEach(b=>b.disabled = false);
   pendingCharacter = null;
   pendingRarity = null;
