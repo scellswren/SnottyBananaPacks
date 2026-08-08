@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SnottyBananaPacks</title>
+<title>Snotty Banana Packs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -81,17 +81,22 @@
 *,*::before,*::after{ box-sizing:border-box; }
 html,body{ height:100%; }
 html{ scrollbar-width:thin; scrollbar-color:var(--violet) transparent; }
-::-webkit-scrollbar{ width:12px; height:12px; }
+::-webkit-scrollbar{ width:11px; height:11px; }
 ::-webkit-scrollbar-track{ background:transparent; }
 ::-webkit-scrollbar-thumb{
-  background-color:var(--violet-deep);
-  background-image:linear-gradient(180deg, var(--violet), var(--violet-deep));
+  background-image:linear-gradient(180deg, var(--pink), var(--violet) 55%, var(--violet-deep));
   border-radius:999px;
   border:3px solid var(--bg);
   background-clip:padding-box;
+  transition:background-image .25s ease, box-shadow .25s ease;
 }
 ::-webkit-scrollbar-thumb:hover{
-  background-image:linear-gradient(180deg, var(--violet-deep), #4c1d95);
+  background-image:linear-gradient(180deg, var(--banana), var(--pink) 50%, var(--violet-deep));
+  background-clip:padding-box;
+  box-shadow:0 0 8px rgba(168,85,247,.55);
+}
+::-webkit-scrollbar-thumb:active{
+  background-image:linear-gradient(180deg, var(--banana-deep), var(--pink) 50%, var(--violet-deep));
   background-clip:padding-box;
 }
 ::-webkit-scrollbar-corner{ background:transparent; }
@@ -616,7 +621,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
 .preview-card{
   background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-lg);
-  width:100%; max-width:340px; padding:26px; text-align:center; position:relative;
+  width:100%; max-width:440px; padding:30px; text-align:center; position:relative;
   box-shadow:var(--shadow-lg); animation:popIn .3s cubic-bezier(.3,1.4,.5,1);
 }
 @keyframes popIn{ from{ opacity:0; transform:scale(.85) translateY(20px); } to{ opacity:1; transform:scale(1) translateY(0); } }
@@ -624,24 +629,24 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   position:absolute; top:14px; right:14px; background:var(--surface); border:1px solid var(--border);
   width:34px; height:34px; border-radius:10px; color:var(--text); font-size:16px;
 }
-.preview-visual-row{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:16px; }
+.preview-visual-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:18px; }
 .preview-visual{
-  width:200px; height:200px; margin:0; border-radius:22px; overflow:hidden;
+  width:280px; height:280px; margin:0; border-radius:26px; overflow:hidden;
   background:var(--surface-2); display:flex; align-items:center; justify-content:center;
-  box-shadow:0 10px 30px rgba(0,0,0,.3); flex:0 0 auto;
+  box-shadow:0 14px 40px rgba(0,0,0,.35); flex:0 0 auto;
 }
 .preview-visual img{ width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .18s ease; }
-.preview-visual .fallback{ font-size:70px; font-family:var(--font-display); font-weight:800; color:#241a00; display:none; align-items:center; justify-content:center; width:100%; height:100%; }
+.preview-visual .fallback{ font-size:92px; font-family:var(--font-display); font-weight:800; color:#241a00; display:none; align-items:center; justify-content:center; width:100%; height:100%; }
 .preview-visual.show-fallback img{ display:none; }
 .preview-visual.show-fallback .fallback{ display:flex; }
 .preview-nav-btn{
-  flex:0 0 auto; width:36px; height:36px; border-radius:10px;
+  flex:0 0 auto; width:40px; height:40px; border-radius:11px;
   background:var(--surface); border:1px solid var(--border); color:var(--text);
-  font-size:18px; font-weight:800; display:flex; align-items:center; justify-content:center;
+  font-size:19px; font-weight:800; display:flex; align-items:center; justify-content:center;
 }
 .preview-nav-btn:hover{ background:var(--surface-2); }
 .preview-nav-btn:disabled{ opacity:.3; cursor:default; }
-.preview-card h2{ margin:6px 0 8px; font-family:var(--font-display); font-size:23px; }
+.preview-card h2{ margin:6px 0 8px; font-family:var(--font-display); font-size:25px; }
 .preview-meta{ display:flex; justify-content:center; gap:10px; margin-top:6px; align-items:center; }
 .preview-owned{ margin-top:14px; font-size:13.5px; color:var(--text-muted); font-weight:600; }
 .preview-num{
@@ -1071,7 +1076,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 <div class="lock-screen" id="lockScreen">
   <div class="lock-card" id="lockCard">
     <div class="lock-emoji">🔒</div>
-    <h1 class="lock-title"><span class="peel">👃</span>Snotty<span style="opacity:.6">BananaPacks</span></h1>
+    <h1 class="lock-title"><span class="peel">👃</span>Snotty<span style="opacity:.6">Banana Packs</span></h1>
     <p class="lock-sub">Enter the access code to continue</p>
     <input type="password" id="lockInput" class="lock-input" placeholder="Access code" autocomplete="off" spellcheck="false" autocapitalize="off">
     <button class="lock-btn" id="lockBtn">Unlock</button>
@@ -1104,7 +1109,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 <button class="fullscreen-fab" id="fullscreenFab" title="Enter fullscreen" aria-label="Toggle fullscreen" style="display:none">⛶</button>
 
 <header class="app-header">
-  <div class="brand"><span class="peel">👃</span><b>Snotty</b><span class="label">BananaPacks</span></div>
+  <div class="brand"><span class="peel">👃</span><b>Snotty</b><span class="label">Banana Packs</span></div>
   <nav class="tabs" id="tabs">
     <button class="tab-btn active" data-view="home">Home</button>
     <button class="tab-btn" data-view="inventory">Inventory<span class="badge" id="invBadge" style="display:none">0</span></button>
@@ -1191,7 +1196,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     <div class="preview-visual-row">
       <button class="preview-nav-btn" id="previewPrev" type="button" aria-label="Previous character">‹</button>
       <div class="preview-visual" id="previewVisual">
-        <img alt="">
+        <img alt="" decoding="async">
         <div class="fallback"></div>
       </div>
       <button class="preview-nav-btn" id="previewNext" type="button" aria-label="Next character">›</button>
@@ -1235,7 +1240,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 
     <div class="reveal-card" id="revealCard" style="display:none">
       <div class="reveal-visual" id="revealVisual">
-        <img alt="">
+        <img alt="" decoding="async">
         <div class="fallback"></div>
       </div>
       <div class="reveal-num" id="revealNum">#000</div>
@@ -1746,6 +1751,33 @@ function tileDelay(i){
 // dev tools. Set back to false once images are fixed.
 const DEBUG_SHOW_IMAGE_PATH = false;
 
+// Warms the browser's image cache for every character in the background, at
+// low network priority and only during idle time, so that by the time the
+// person actually opens Inventory/Index/a pack, the images are already
+// cached and appear instantly instead of popping in one by one. This never
+// competes with anything the person is actively looking at.
+function preloadCharacterImages(){
+  if(!Array.isArray(CHARACTERS) || CHARACTERS.length===0) return;
+  const urls = CHARACTERS.map(c=>c.image);
+  let i = 0;
+  function loadBatch(deadline){
+    while(i<urls.length && (!deadline || deadline.timeRemaining() > 0)){
+      const img = new Image();
+      img.decoding = "async";
+      if("fetchPriority" in img) img.fetchPriority = "low";
+      img.src = urls[i];
+      i++;
+    }
+    if(i<urls.length){
+      if("requestIdleCallback" in window) requestIdleCallback(loadBatch, { timeout:1000 });
+      else setTimeout(loadBatch, 60);
+    }
+  }
+  if("requestIdleCallback" in window) requestIdleCallback(loadBatch, { timeout:1000 });
+  else setTimeout(loadBatch, 60);
+}
+preloadCharacterImages();
+
 function wireVisual(container, character){
   const img = container.querySelector("img");
   const fb  = container.querySelector(".fallback");
@@ -1763,7 +1795,7 @@ function wireVisual(container, character){
 
   img.onerror = ()=>{
     container.classList.add("show-fallback");
-    console.error("[SnottyBananaPacks] Image failed to load for \"" + character.name + "\". Tried this exact URL:", character.image);
+    console.error("[Snotty Banana Packs] Image failed to load for \"" + character.name + "\". Tried this exact URL:", character.image);
     if(DEBUG_SHOW_IMAGE_PATH){
       fb.textContent = character.image;
       fb.title = "Failed to load: " + character.image;
@@ -1968,7 +2000,7 @@ function renderInventory(){
         <div class="num-tag">${formatNum(c.num)}</div>
         <div class="qty-tag">x${inventory[c.id]}</div>
         <div class="char-visual" data-visual="${c.id}">
-          <img alt="">
+          <img alt="" loading="lazy" decoding="async">
           <div class="fallback"></div>
         </div>
         <div class="cname">${c.name}</div>
@@ -2183,7 +2215,7 @@ function renderIndex(){
       return `<div class="char-tile clickable rarity-${c.rarity}"${tileDelay(i)} data-id="${c.id}">
         <div class="num-tag">${formatNum(c.num)}</div>
         <div class="char-visual" data-visual="${c.id}">
-          <img alt=""><div class="fallback"></div>
+          <img alt="" loading="lazy" decoding="async"><div class="fallback"></div>
         </div>
         <div class="cname">${c.name}</div>
         <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
@@ -2235,6 +2267,8 @@ function renderPreviewAt(idx){
   rp.style.background = `linear-gradient(120deg, ${r.color}, ${r.color2})`;
   document.getElementById("previewOwned").textContent = `Owned x${inventory[c.id]||0}`;
   wireVisual(document.getElementById("previewVisual"), c);
+  document.getElementById("previewVisual").style.boxShadow =
+    `0 14px 40px rgba(0,0,0,.35), 0 0 0 3px ${r.color}, 0 0 32px ${r.color}66`;
   const single = previewList.length<=1;
   document.getElementById("previewPrev").disabled = single;
   document.getElementById("previewNext").disabled = single;
@@ -2280,7 +2314,7 @@ function openPackInfo(packId){
       return `<div class="char-tile rarity-${c.rarity}"${tileDelay(i)} data-info-visual="${c.id}">
         <div class="num-tag">${formatNum(c.num)}</div>
         <div class="char-visual" data-visual="${c.id}">
-          <img alt=""><div class="fallback"></div>
+          <img alt="" loading="lazy" decoding="async"><div class="fallback"></div>
         </div>
         <div class="cname">${c.name}</div>
         <span class="rarity-pill" style="background:linear-gradient(120deg, ${r.color}, ${r.color2})">${r.label}</span>
