@@ -1791,22 +1791,31 @@ const DEBUG_SHOW_IMAGE_PATH = false;
 function preloadCharacterImages(){
   if(!Array.isArray(CHARACTERS) || CHARACTERS.length===0) return;
   const urls = CHARACTERS.map(c=>c.image);
-  let i = 0;
-  function loadBatch(deadline){
-    while(i<urls.length && (!deadline || deadline.timeRemaining() > 0)){
-      const img = new Image();
-      img.decoding = "async";
-      if("fetchPriority" in img) img.fetchPriority = "low";
-      img.src = urls[i];
-      i++;
-    }
-    if(i<urls.length){
-      if("requestIdleCallback" in window) requestIdleCallback(loadBatch, { timeout:1000 });
-      else setTimeout(loadBatch, 60);
-    }
+  const CONCURRENCY = 3; // small on purpose — never compete with what's on screen
+  let index = 0;
+  let active = 0;
+
+  function startOne(){
+    if(index >= urls.length || active >= CONCURRENCY) return;
+    const url = urls[index++];
+    active++;
+    const img = new Image();
+    img.decoding = "async";
+    if("fetchPriority" in img) img.fetchPriority = "low";
+    const settle = ()=>{ active--; scheduleMore(); };
+    img.onload = settle;
+    img.onerror = settle;
+    img.src = url;
   }
-  if("requestIdleCallback" in window) requestIdleCallback(loadBatch, { timeout:1000 });
-  else setTimeout(loadBatch, 60);
+  function scheduleMore(){
+    if(index >= urls.length) return;
+    const kick = ()=>{ while(active < CONCURRENCY && index < urls.length) startOne(); };
+    if("requestIdleCallback" in window) requestIdleCallback(kick, { timeout:1500 });
+    else setTimeout(kick, 150);
+  }
+  // Give the initially visible screen a head start before any background
+  // warming begins at all, then trickle the rest in slowly.
+  setTimeout(scheduleMore, 1500);
 }
 preloadCharacterImages();
 
@@ -1825,7 +1834,18 @@ function wireVisual(container, character){
   img.style.opacity = "0";
   img.removeAttribute("src");
 
+  // Defensive net: if a load somehow never fires load OR error (can happen
+  // under heavy connection contention), fall back after a few seconds
+  // instead of leaving the tile permanently blank.
+  clearTimeout(img._stuckTimer);
+  img._stuckTimer = setTimeout(()=>{
+    if(img.getAttribute("src") && !img.complete){
+      container.classList.add("show-fallback");
+    }
+  }, 6000);
+
   img.onerror = ()=>{
+    clearTimeout(img._stuckTimer);
     container.classList.add("show-fallback");
     console.error("[Snotty Banana Packs] Image failed to load for \"" + character.name + "\". Tried this exact URL:", character.image);
     if(DEBUG_SHOW_IMAGE_PATH){
@@ -1842,6 +1862,7 @@ function wireVisual(container, character){
   };
   img.onload = ()=>{
     // loaded fine — make sure we're not stuck showing the fallback from a previous attempt
+    clearTimeout(img._stuckTimer);
     container.classList.remove("show-fallback");
     img.style.opacity = "1";
   };
