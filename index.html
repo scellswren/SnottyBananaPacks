@@ -1813,6 +1813,11 @@ function preloadCharacterImages(){
     if("requestIdleCallback" in window) requestIdleCallback(kick, { timeout:1500 });
     else setTimeout(kick, 150);
   }
+  // Give the initially visible screen a head start before any background
+  // warming begins at all, then trickle the rest in slowly.
+  setTimeout(scheduleMore, 3000);
+}
+preloadCharacterImages();
 
 // Fetches one specific image right now, at high priority, ahead of the
 // slow background trickle above. Used the instant a pack roll is decided —
@@ -1827,11 +1832,6 @@ function prioritizeImageLoad(url){
   if("fetchPriority" in img) img.fetchPriority = "high";
   img.src = url;
 }
-  // Give the initially visible screen a head start before any background
-  // warming begins at all, then trickle the rest in slowly.
-  setTimeout(scheduleMore, 3000);
-}
-preloadCharacterImages();
 
 function wireVisual(container, character){
   const img = container.querySelector("img");
