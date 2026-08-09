@@ -235,6 +235,38 @@ a, button, .clickable{ cursor:pointer; }
 .fullscreen-fab:hover{ transform:translateY(-3px) scale(1.05); box-shadow:var(--shadow-lg); background:var(--surface-2); }
 .fullscreen-fab:active{ transform:translateY(0) scale(.94); }
 
+/* ============================= BACK TO TOP FAB ============================= */
+.back-to-top-fab{
+  position:fixed; right:20px; bottom:82px; z-index:60;
+  width:52px; height:52px; border-radius:16px; border:1px solid var(--border-strong);
+  background:var(--bg-elevated); color:var(--text); font-size:22px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-md);
+  animation:fabIn .3s cubic-bezier(.3,1.4,.5,1);
+  transition:transform .18s cubic-bezier(.3,1.4,.6,1), background .2s ease, box-shadow .2s ease, opacity .2s ease;
+}
+.back-to-top-fab:hover{ transform:translateY(-3px) scale(1.05); box-shadow:var(--shadow-lg); background:var(--surface-2); }
+.back-to-top-fab:active{ transform:translateY(0) scale(.94); }
+
+/* ============================= SEARCH CLEAR + RESET FILTERS ============================= */
+.index-search-wrap{ position:relative; flex:1 1 200px; min-width:180px; }
+.index-search-wrap .index-search{ width:100%; padding-right:34px; }
+.index-search-clear{
+  position:absolute; right:8px; top:50%; transform:translateY(-50%);
+  width:22px; height:22px; border-radius:7px; border:none;
+  background:var(--surface-2); color:var(--text-muted); font-size:12px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease, color .15s ease;
+}
+.index-search-clear:hover{ background:var(--violet); color:#fff; }
+.reset-filters-btn{
+  font-size:12.5px; font-weight:700; color:var(--text-muted);
+  background:var(--surface); border:1px solid var(--border); border-radius:999px;
+  padding:8px 14px; white-space:nowrap;
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.reset-filters-btn:hover{ background:var(--surface-2); border-color:var(--border-strong); color:var(--text); }
+
 /* ============================= INVENTORY GROUPS ============================= */
 .inventory-groups{ display:flex; flex-direction:column; gap:34px; }
 .inv-group{ padding-top:2px; }
@@ -656,6 +688,9 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 }
 
 .pack-info-card{ max-width:520px; text-align:left; }
+.pack-info-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:6px 0 14px; }
+.pack-info-head h2{ margin:0; }
+.pack-info-head .sort-seg{ flex:none; }
 .pack-info-card h2{ text-align:left; padding-right:36px; }
 .pack-info-grid{
   display:grid; grid-template-columns:repeat(auto-fill, minmax(110px,1fr)); gap:12px;
@@ -1107,6 +1142,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 
 <!-- Floating fullscreen re-entry button -->
 <button class="fullscreen-fab" id="fullscreenFab" title="Enter fullscreen" aria-label="Toggle fullscreen" style="display:none">⛶</button>
+<button class="back-to-top-fab" id="backToTopFab" title="Back to top" aria-label="Back to top" style="display:none">↑</button>
 
 <header class="app-header">
   <div class="brand"><span class="peel">👃</span><b>Snotty</b><span class="label">Banana Packs</span></div>
@@ -1165,7 +1201,10 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     </div>
     <div class="toolbar">
       <div class="toolbar-row">
-        <input type="text" id="indexSearch" class="index-search" placeholder="Search characters..." autocomplete="off">
+        <div class="index-search-wrap">
+          <input type="text" id="indexSearch" class="index-search" placeholder="Search characters..." autocomplete="off">
+          <button class="index-search-clear" id="indexSearchClear" type="button" aria-label="Clear search" style="display:none">✕</button>
+        </div>
         <div class="dropdown" id="packDropdown">
           <button class="dropdown-trigger" id="packDropdownTrigger" type="button" aria-haspopup="listbox" aria-expanded="false">
             <span id="packDropdownLabel">All packs</span>
@@ -1173,6 +1212,10 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
           </button>
           <div class="dropdown-panel" id="packDropdownPanel" role="listbox"></div>
         </div>
+        <button class="reset-filters-btn" id="resetFiltersBtn" type="button" style="display:none">Reset filters</button>
+      </div>
+      <div class="toolbar-row">
+        <span class="inv-sort-label">Sort by</span>
         <div class="sort-seg" id="sortSeg"></div>
       </div>
       <div class="toolbar-row">
@@ -1211,7 +1254,10 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 <div class="modal-backdrop" id="packInfoModal">
   <div class="preview-card pack-info-card">
     <button class="close-x" id="packInfoClose">✕</button>
-    <h2 id="packInfoTitle">—</h2>
+    <div class="pack-info-head">
+      <h2 id="packInfoTitle">—</h2>
+      <div class="sort-seg" id="packInfoSortSeg"></div>
+    </div>
     <div class="pack-info-grid" id="packInfoGrid"></div>
   </div>
 </div>
@@ -1410,6 +1456,21 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
   document.addEventListener("webkitfullscreenchange", updateFullscreenFab);
 })();
 
+/* ======================= LAYOUT HELPERS (back-to-top) ======================= */
+
+(function(){
+  const backToTopFab = document.getElementById("backToTopFab");
+  function updateBackToTopVisibility(){
+    const show = window.scrollY > 500;
+    backToTopFab.style.display = show ? "flex" : "none";
+  }
+  window.addEventListener("scroll", updateBackToTopVisibility, { passive:true });
+  updateBackToTopVisibility();
+  backToTopFab.addEventListener("click", ()=>{
+    window.scrollTo({ top:0, behavior:"smooth" });
+  });
+})();
+
 /* ======================= DATA (expand here later) ======================= */
 
 const RARITIES = {
@@ -1423,8 +1484,8 @@ const RARITIES = {
 };
 
 const PACKS = [
-  { id:"orin-pack", name:"Orin Pack", color:"#FF8A3D", color2:"#E8590C" },
   { id:"wren-pack", name:"Wren Pack", color:"#A855F7", color2:"#6D28D9" },
+  { id:"orin-pack", name:"Orin Pack", color:"#FF8A3D", color2:"#E8590C" },
   { id:"mother-pack", name:"Mother Pack", color:"#2E9B5F", color2:"#0B3D24" },
   { id:"iden-pack", name:"Iden Pack", color:"#3B82F6", color2:"#1D4ED8" },
 ];
@@ -1714,10 +1775,9 @@ const Sound = (function(){
 
 const LS_KEYS = {
   inventory:"sbp_inventory", newIds:"sbp_new_ids", theme:"sbp_theme",
-  homePack:"sbp_home_pack",
   indexPackFilter:"sbp_index_pack_filter", indexRarityFilter:"sbp_index_rarity_filter",
   indexSort:"sbp_index_sort", indexOwnership:"sbp_index_ownership", indexSearch:"sbp_index_search",
-  inventorySort:"sbp_inventory_sort",
+  inventorySort:"sbp_inventory_sort", packInfoSort:"sbp_pack_info_sort",
 };
 
 function loadJSON(key, fallback){
@@ -1907,10 +1967,7 @@ updateBadgeUI();
 
 /* ======================= PACK PICKER (home) ======================= */
 
-let currentHomePack = (function(){
-  const saved = localStorage.getItem(LS_KEYS.homePack);
-  return (saved && PACKS.some(p=>p.id===saved)) ? saved : PACKS[0].id;
-})();
+let currentHomePack = PACKS[Math.floor(Math.random()*PACKS.length)].id;
 
 function renderPackPicker(){
   const wrap = document.getElementById("packPicker");
@@ -1956,7 +2013,6 @@ function renderHomePackDropdown(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value!==currentHomePack){
         currentHomePack = btn.dataset.value;
-        localStorage.setItem(LS_KEYS.homePack, currentHomePack);
         Sound.pillSelect();
         renderHomePackDropdown();
         renderPackPicker();
@@ -2054,14 +2110,18 @@ function renderInventory(){
 
   // Group owned characters by their pack, in PACKS order; skip packs with nothing owned.
   const groups = PACKS
-    .map(pack=>({ pack, chars: sortCharList(ownedChars.filter(c=>c.packId===pack.id)) }))
+    .map(pack=>({
+      pack,
+      chars: sortCharList(ownedChars.filter(c=>c.packId===pack.id)),
+      total: CHARACTERS.filter(c=>c.packId===pack.id).length,
+    }))
     .filter(g=>g.chars.length>0);
 
   grid.innerHTML = groups.map(g=>`
     <div class="inv-group" data-pack-group="${g.pack.id}">
       <div class="inv-group-head">
         <h2>${g.pack.name}</h2>
-        <span class="inv-group-count">${g.chars.length} owned</span>
+        <span class="inv-group-count">${g.chars.length}/${g.total} owned</span>
       </div>
       <div class="grid" data-inv-grid="${g.pack.id}"></div>
     </div>
@@ -2144,6 +2204,7 @@ function renderFilterPills(){
       localStorage.setItem(LS_KEYS.indexRarityFilter, currentRarityFilter);
       Sound.pillSelect(RARITY_ORDER.indexOf(btn.dataset.value));
       renderFilterPills();
+      updateResetFiltersVisibility();
       renderIndex();
     });
   });
@@ -2177,6 +2238,8 @@ function renderPackDropdown(){
         Sound.pillSelect();
         renderPackDropdown();
         renderFilterPills();
+        renderOwnSeg();
+        updateResetFiltersVisibility();
         renderIndex();
       }
       closePackDropdown();
@@ -2222,6 +2285,7 @@ function renderSortSeg(){
       localStorage.setItem(LS_KEYS.indexSort, currentSort);
       Sound.pillSelect();
       renderSortSeg();
+      updateResetFiltersVisibility();
       renderIndex();
     });
   });
@@ -2251,6 +2315,7 @@ function renderOwnSeg(){
       localStorage.setItem(LS_KEYS.indexOwnership, currentOwnership);
       Sound.pillSelect();
       renderOwnSeg();
+      updateResetFiltersVisibility();
       renderIndex();
     });
   });
@@ -2260,12 +2325,58 @@ renderOwnSeg();
 /* ----- search control ----- */
 
 const indexSearchInput = document.getElementById("indexSearch");
+const indexSearchClear = document.getElementById("indexSearchClear");
 indexSearchInput.value = currentSearch; // restore last search on load
+indexSearchClear.style.display = currentSearch ? "flex" : "none";
 indexSearchInput.addEventListener("input", ()=>{
   currentSearch = indexSearchInput.value.trim().toLowerCase();
   localStorage.setItem(LS_KEYS.indexSearch, currentSearch);
+  indexSearchClear.style.display = currentSearch ? "flex" : "none";
+  updateResetFiltersVisibility();
   renderIndex();
 });
+indexSearchClear.addEventListener("click", ()=>{
+  if(!indexSearchInput.value) return;
+  indexSearchInput.value = "";
+  currentSearch = "";
+  localStorage.setItem(LS_KEYS.indexSearch, "");
+  indexSearchClear.style.display = "none";
+  Sound.click();
+  updateResetFiltersVisibility();
+  renderIndex();
+  indexSearchInput.focus();
+});
+
+/* ----- reset filters ----- */
+
+const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+function updateResetFiltersVisibility(){
+  const isDefault = currentPackFilter==="all" && currentRarityFilter==="all" &&
+    currentSort==="rarity" && currentOwnership==="all" && !currentSearch;
+  resetFiltersBtn.style.display = isDefault ? "none" : "inline-flex";
+}
+resetFiltersBtn.addEventListener("click", ()=>{
+  Sound.click();
+  currentPackFilter = "all";
+  currentRarityFilter = "all";
+  currentSort = "rarity";
+  currentOwnership = "all";
+  currentSearch = "";
+  localStorage.setItem(LS_KEYS.indexPackFilter, currentPackFilter);
+  localStorage.setItem(LS_KEYS.indexRarityFilter, currentRarityFilter);
+  localStorage.setItem(LS_KEYS.indexSort, currentSort);
+  localStorage.setItem(LS_KEYS.indexOwnership, currentOwnership);
+  localStorage.setItem(LS_KEYS.indexSearch, currentSearch);
+  indexSearchInput.value = "";
+  indexSearchClear.style.display = "none";
+  renderPackDropdown();
+  renderFilterPills();
+  renderSortSeg();
+  renderOwnSeg();
+  updateResetFiltersVisibility();
+  renderIndex();
+});
+updateResetFiltersVisibility();
 
 function renderIndex(){
   const rarityFilter = currentRarityFilter;
@@ -2391,13 +2502,46 @@ function closePreview(){ document.getElementById("previewModal").classList.remov
 
 /* ======================= PACK CONTENTS INFO MODAL ======================= */
 
+let currentPackInfoSort = (function(){
+  const saved = localStorage.getItem(LS_KEYS.packInfoSort);
+  return (saved==="number" || saved==="rarity") ? saved : "rarity";
+})();
+let openPackInfoId = null;
+
+function sortPackInfoChars(chars){
+  if(currentPackInfoSort==="number"){
+    return chars.slice().sort((a,b)=> a.num - b.num);
+  }
+  return chars.slice().sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
+}
+
+function renderPackInfoSortSeg(){
+  const wrap = document.getElementById("packInfoSortSeg");
+  const options = [{ key:"rarity", label:"Rarity" }, { key:"number", label:"Number" }];
+  wrap.innerHTML = options.map(o=>{
+    const active = currentPackInfoSort===o.key;
+    return `<button class="sort-seg-btn${active?" active":""}" data-value="${o.key}">${o.label}</button>`;
+  }).join("");
+  wrap.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      if(btn.dataset.value===currentPackInfoSort) return;
+      currentPackInfoSort = btn.dataset.value;
+      localStorage.setItem(LS_KEYS.packInfoSort, currentPackInfoSort);
+      Sound.pillSelect();
+      renderPackInfoSortSeg();
+      if(openPackInfoId) openPackInfo(openPackInfoId);
+    });
+  });
+}
+
 function openPackInfo(packId){
   const pack = PACKS.find(p=>p.id===packId);
   if(!pack) return;
-  const chars = CHARACTERS.filter(c=>c.packId===packId)
-    .sort((a,b)=> RARITIES[a.rarity].order - RARITIES[b.rarity].order || a.name.localeCompare(b.name));
+  openPackInfoId = packId;
+  const chars = sortPackInfoChars(CHARACTERS.filter(c=>c.packId===packId));
 
   document.getElementById("packInfoTitle").textContent = pack.name;
+  renderPackInfoSortSeg();
 
   const grid = document.getElementById("packInfoGrid");
   grid.innerHTML = chars.map((c,i)=>{
@@ -2434,7 +2578,10 @@ document.getElementById("packInfoClose").addEventListener("click", closePackInfo
 document.getElementById("packInfoModal").addEventListener("click", e=>{
   if(e.target.id==="packInfoModal") closePackInfo();
 });
-function closePackInfo(){ document.getElementById("packInfoModal").classList.remove("show"); }
+function closePackInfo(){
+  document.getElementById("packInfoModal").classList.remove("show");
+  openPackInfoId = null;
+}
 
 /* ======================= PACK OPENING LOGIC ======================= */
 
