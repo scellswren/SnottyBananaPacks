@@ -1426,6 +1426,7 @@ const PACKS = [
   { id:"orin-pack", name:"Orin Pack", color:"#FF8A3D", color2:"#E8590C" },
   { id:"wren-pack", name:"Wren Pack", color:"#A855F7", color2:"#6D28D9" },
   { id:"mother-pack", name:"Mother Pack", color:"#2E9B5F", color2:"#0B3D24" },
+  { id:"iden-pack", name:"Iden Pack", color:"#3B82F6", color2:"#1D4ED8" },
 ];
 
 // Add new characters here later; everything else adapts automatically.
@@ -1561,6 +1562,11 @@ const CHARACTERS = [
   { id:"texan-mother",       name:"Texan Mother",       rarity:"rare",     packId:"mother-pack", image:"TexanMother.jpg",      num:35 },
   { id:"short-hair-mother",  name:"Short Hair Mother",  rarity:"common",   packId:"mother-pack", image:"ShortHairMother.jpg",  num:36 },
   { id:"beard-mother",       name:"Beard Mother",       rarity:"common",   packId:"mother-pack", image:"BeardMother.jpg",      num:37 },
+
+  { id:"iden",               name:"Iden",               rarity:"common",   packId:"iden-pack", image:"Iden.jpg",           num:1 },
+  { id:"bald-iden",          name:"Bald Iden",          rarity:"uncommon", packId:"iden-pack", image:"BaldIden.jpg",       num:2 },
+  { id:"hairy-iden",         name:"Hairy Iden",         rarity:"rare",     packId:"iden-pack", image:"HairyIden.jpg",      num:3 },
+  { id:"noseless-iden",      name:"Noseless Iden",      rarity:"common",   packId:"iden-pack", image:"NoselessIden.jpg",   num:4 },
 ];
 
 const RARITY_ORDER = Object.keys(RARITIES).sort((a,b)=>RARITIES[a].order-RARITIES[b].order);
@@ -1706,7 +1712,13 @@ const Sound = (function(){
 
 /* ======================= STORAGE ======================= */
 
-const LS_KEYS = { inventory:"sbp_inventory", newIds:"sbp_new_ids", theme:"sbp_theme" };
+const LS_KEYS = {
+  inventory:"sbp_inventory", newIds:"sbp_new_ids", theme:"sbp_theme",
+  homePack:"sbp_home_pack",
+  indexPackFilter:"sbp_index_pack_filter", indexRarityFilter:"sbp_index_rarity_filter",
+  indexSort:"sbp_index_sort", indexOwnership:"sbp_index_ownership", indexSearch:"sbp_index_search",
+  inventorySort:"sbp_inventory_sort",
+};
 
 function loadJSON(key, fallback){
   try{
@@ -1895,7 +1907,10 @@ updateBadgeUI();
 
 /* ======================= PACK PICKER (home) ======================= */
 
-let currentHomePack = PACKS[0].id;
+let currentHomePack = (function(){
+  const saved = localStorage.getItem(LS_KEYS.homePack);
+  return (saved && PACKS.some(p=>p.id===saved)) ? saved : PACKS[0].id;
+})();
 
 function renderPackPicker(){
   const wrap = document.getElementById("packPicker");
@@ -1941,6 +1956,7 @@ function renderHomePackDropdown(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value!==currentHomePack){
         currentHomePack = btn.dataset.value;
+        localStorage.setItem(LS_KEYS.homePack, currentHomePack);
         Sound.pillSelect();
         renderHomePackDropdown();
         renderPackPicker();
@@ -1990,7 +2006,10 @@ renderOddsInto("oddsListIndex");
 
 /* ======================= INVENTORY VIEW ======================= */
 
-let currentInventorySort = "rarity"; // "rarity" | "number" — applied within each pack group
+let currentInventorySort = (function(){
+  const saved = localStorage.getItem(LS_KEYS.inventorySort);
+  return (saved==="number" || saved==="rarity") ? saved : "rarity";
+})(); // "rarity" | "number" — applied within each pack group
 
 function renderInvSortSeg(){
   const wrap = document.getElementById("invSortSeg");
@@ -2003,6 +2022,7 @@ function renderInvSortSeg(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value===currentInventorySort) return;
       currentInventorySort = btn.dataset.value;
+      localStorage.setItem(LS_KEYS.inventorySort, currentInventorySort);
       Sound.pillSelect();
       renderInvSortSeg();
       renderInventory();
@@ -2076,11 +2096,23 @@ function renderInventory(){
 
 /* ======================= INDEX VIEW ======================= */
 
-let currentPackFilter = "all";
-let currentRarityFilter = "all";
-let currentSort = "rarity"; // "rarity" | "number"
-let currentOwnership = "all"; // "all" | "owned" | "missing"
-let currentSearch = "";
+let currentPackFilter = (function(){
+  const saved = localStorage.getItem(LS_KEYS.indexPackFilter);
+  return (saved && (saved==="all" || PACKS.some(p=>p.id===saved))) ? saved : "all";
+})();
+let currentRarityFilter = (function(){
+  const saved = localStorage.getItem(LS_KEYS.indexRarityFilter);
+  return (saved && (saved==="all" || RARITY_ORDER.includes(saved))) ? saved : "all";
+})();
+let currentSort = (function(){
+  const saved = localStorage.getItem(LS_KEYS.indexSort);
+  return (saved==="number" || saved==="rarity") ? saved : "rarity";
+})();
+let currentOwnership = (function(){
+  const saved = localStorage.getItem(LS_KEYS.indexOwnership);
+  return ["all","owned","missing"].includes(saved) ? saved : "all";
+})();
+let currentSearch = localStorage.getItem(LS_KEYS.indexSearch) || "";
 
 function scopedCharacters(){
   // Characters within the current pack scope only (used for counts/progress,
@@ -2109,6 +2141,7 @@ function renderFilterPills(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value===currentRarityFilter) return;
       currentRarityFilter = btn.dataset.value;
+      localStorage.setItem(LS_KEYS.indexRarityFilter, currentRarityFilter);
       Sound.pillSelect(RARITY_ORDER.indexOf(btn.dataset.value));
       renderFilterPills();
       renderIndex();
@@ -2138,6 +2171,7 @@ function renderPackDropdown(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value!==currentPackFilter){
         currentPackFilter = btn.dataset.value;
+        localStorage.setItem(LS_KEYS.indexPackFilter, currentPackFilter);
         // switching pack scope can invalidate the current rarity filter's relevance; keep it,
         // but refresh pills so counts reflect the new scope.
         Sound.pillSelect();
@@ -2185,6 +2219,7 @@ function renderSortSeg(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value===currentSort) return;
       currentSort = btn.dataset.value;
+      localStorage.setItem(LS_KEYS.indexSort, currentSort);
       Sound.pillSelect();
       renderSortSeg();
       renderIndex();
@@ -2213,6 +2248,7 @@ function renderOwnSeg(){
     btn.addEventListener("click", ()=>{
       if(btn.dataset.value===currentOwnership) return;
       currentOwnership = btn.dataset.value;
+      localStorage.setItem(LS_KEYS.indexOwnership, currentOwnership);
       Sound.pillSelect();
       renderOwnSeg();
       renderIndex();
@@ -2224,8 +2260,10 @@ renderOwnSeg();
 /* ----- search control ----- */
 
 const indexSearchInput = document.getElementById("indexSearch");
+indexSearchInput.value = currentSearch; // restore last search on load
 indexSearchInput.addEventListener("input", ()=>{
   currentSearch = indexSearchInput.value.trim().toLowerCase();
+  localStorage.setItem(LS_KEYS.indexSearch, currentSearch);
   renderIndex();
 });
 
