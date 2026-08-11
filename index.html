@@ -268,6 +268,41 @@ a, button, .clickable{ cursor:pointer; }
 }
 .reset-filters-btn:hover{ background:var(--surface-2); border-color:var(--border-strong); color:var(--text); }
 
+/* ============================= CODE TAB ============================= */
+.code-gate{
+  max-width:440px; margin:20px auto 0; text-align:center;
+  background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-lg);
+  padding:36px 30px; box-shadow:var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.code-gate-sub{ color:var(--text-muted); font-size:14px; margin:0 0 20px; font-weight:500; }
+.code-gate-row{ display:flex; gap:10px; }
+.code-gate-row .index-search{ text-align:center; }
+.code-gate-row .reset-filters-btn{ flex:none; }
+.code-tools{ animation:viewIn .4s cubic-bezier(.2,.9,.25,1); }
+.code-tools-title{ font-family:var(--font-display); font-size:22px; margin:4px 0 6px; }
+.code-tools-sub{ color:var(--text-muted); font-size:14px; margin:0 0 24px; font-weight:500; max-width:560px; }
+.rarity-preview-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:16px; }
+.rarity-preview-btn{
+  position:relative; overflow:hidden;
+  border:1px solid color-mix(in srgb, var(--pc, var(--border-strong)) 45%, var(--border));
+  background:linear-gradient(150deg, color-mix(in srgb, var(--pc, var(--surface)) 22%, var(--surface)), var(--surface));
+  border-radius:var(--radius-md); padding:22px 16px; text-align:center;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  transition:transform .2s cubic-bezier(.3,1.4,.6,1), box-shadow .2s ease, border-color .2s ease;
+}
+.rarity-preview-btn .rp-dot{
+  width:26px; height:26px; border-radius:50%;
+  background:linear-gradient(135deg, var(--pc, var(--violet)), var(--pc2, var(--violet-deep)));
+  box-shadow:0 0 0 5px color-mix(in srgb, var(--pc, transparent) 20%, transparent), 0 6px 16px color-mix(in srgb, var(--pc, rgba(0,0,0,.3)) 45%, transparent);
+}
+.rarity-preview-btn .rp-label{ font-weight:800; font-size:15px; letter-spacing:.2px; }
+.rarity-preview-btn:hover{
+  transform:translateY(-4px) scale(1.03);
+  border-color:color-mix(in srgb, var(--pc, var(--border-strong)) 75%, var(--border-strong));
+  box-shadow:0 14px 30px -8px color-mix(in srgb, var(--pc, rgba(0,0,0,.4)) 55%, transparent);
+}
+.rarity-preview-btn:active{ transform:translateY(-1px) scale(.98); }
+
 /* ============================= INVENTORY GROUPS ============================= */
 .inventory-groups{ display:flex; flex-direction:column; gap:34px; }
 .inv-group{ padding-top:2px; }
@@ -1187,6 +1222,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     <button class="tab-btn active" data-view="home">Home</button>
     <button class="tab-btn" data-view="inventory">Inventory<span class="badge" id="invBadge" style="display:none">0</span></button>
     <button class="tab-btn" data-view="index">Index</button>
+    <button class="tab-btn" data-view="code">Code</button>
   </nav>
   <div class="header-actions">
     <button class="icon-btn" id="glowToggle" title="Toggle pack glow" aria-label="Toggle pack card glow effect">✨</button>
@@ -1266,6 +1302,28 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     <div class="odds-card">
       <h3>Drop rates</h3>
       <div class="odds-grid" id="oddsListIndex"></div>
+    </div>
+  </section>
+
+  <!-- CODE -->
+  <section class="view" id="view-code">
+    <div class="section-head">
+      <h1>Code</h1>
+    </div>
+
+    <div class="code-gate" id="codeGate">
+      <p class="code-gate-sub">Got a code? Enter it below to unlock hidden tools.</p>
+      <div class="code-gate-row">
+        <input type="text" id="codeInput" class="index-search" placeholder="Enter code..." autocomplete="off" spellcheck="off" autocapitalize="off">
+        <button class="reset-filters-btn" id="codeSubmitBtn" type="button">Submit</button>
+      </div>
+      <div class="lock-error" id="codeError"></div>
+    </div>
+
+    <div class="code-tools" id="codeTools" style="display:none">
+      <h2 class="code-tools-title">Rarity Preview</h2>
+      <p class="code-tools-sub">See the full opening animation for any rarity, on demand — nothing here is added to your collection.</p>
+      <div class="rarity-preview-grid" id="rarityPreviewGrid"></div>
     </div>
   </section>
 </main>
@@ -1664,6 +1722,7 @@ const CHARACTERS = [
   { id:"short-hair-mother",  name:"Short Hair Mother",  rarity:"common",   packId:"mother-pack", image:"ShortHairMother.jpg",  num:36 },
   { id:"beard-mother",       name:"Beard Mother",       rarity:"common",   packId:"mother-pack", image:"BeardMother.jpg",      num:37 },
   { id:"minecraft-mother",   name:"Minecraft Mother",   rarity:"legendary",packId:"mother-pack", image:"MinecraftMother.jpg",  num:38 },
+  { id:"buddha-mother",      name:"Buddha Mother",      rarity:"bumhole",  packId:"mother-pack", image:"BuddhaMother.jpg",     num:39 },
 
   { id:"iden",               name:"Iden",               rarity:"common",   packId:"iden-pack", image:"Iden.jpg",           num:1 },
   { id:"bald-iden",          name:"Bald Iden",          rarity:"uncommon", packId:"iden-pack", image:"BaldIden.jpg",       num:2 },
@@ -1692,6 +1751,7 @@ const CHARACTERS = [
   { id:"ballet-iden",        name:"Ballet Iden",        rarity:"rare",     packId:"iden-pack", image:"BalletIden.jpg",     num:25 },
   { id:"security-guard-iden",name:"Security Guard Iden",rarity:"uncommon", packId:"iden-pack", image:"SecurityGuardIden.jpg",num:26 },
   { id:"forehead-iden",      name:"Forehead Iden",      rarity:"uncommon", packId:"iden-pack", image:"ForeheadIden.jpg",   num:27 },
+  { id:"the-black-hole-iden",name:"The Black Hole Iden",rarity:"bumhole",  packId:"iden-pack", image:"TheBlackHoleIden.jpg",num:28 },
 
   { id:"arva",               name:"Arva",               rarity:"common",   packId:"arva-pack", image:"Arva.jpg",           num:1 },
   { id:"bald-arva",          name:"Bald Arva",          rarity:"uncommon", packId:"arva-pack", image:"BaldArva.jpg",       num:2 },
@@ -1844,7 +1904,7 @@ const LS_KEYS = {
   inventory:"sbp_inventory", newIds:"sbp_new_ids", theme:"sbp_theme", packGlow:"sbp_pack_glow",
   indexPackFilter:"sbp_index_pack_filter", indexRarityFilter:"sbp_index_rarity_filter",
   indexSort:"sbp_index_sort", indexOwnership:"sbp_index_ownership", indexSearch:"sbp_index_search",
-  inventorySort:"sbp_inventory_sort", packInfoSort:"sbp_pack_info_sort",
+  inventorySort:"sbp_inventory_sort", packInfoSort:"sbp_pack_info_sort", codeUnlocked:"sbp_code_unlocked",
 };
 
 function loadJSON(key, fallback){
@@ -2713,6 +2773,7 @@ const legendBanner  = document.getElementById("legendBanner");
 
 let pendingCharacter = null;
 let pendingRarity = null;
+let isPreviewMode = false;
 let extraTimers = [];
 let sparkInterval = null;
 
@@ -2779,23 +2840,43 @@ function scheduleHeartbeats(chargeTime){
 }
 
 function startPackOpening(packId){
-  document.querySelectorAll(".pack-open-btn, .pack-info-btn").forEach(b=>b.disabled = true);
-  resetOverlayVisuals();
-
   const pack = PACKS.find(p=>p.id===packId) || PACKS[0];
-  openingPack.style.setProperty("--pack-color", pack.color);
-  openingPack.style.setProperty("--pack-color2", pack.color2);
-
-  overlay.classList.add("show");
-
-  pendingRarity = pickRarity();
-  pendingCharacter = pickCharacter(pack.id, pendingRarity);
+  let rarity = pickRarity();
+  let character = pickCharacter(pack.id, rarity);
   // If there was no character at the rolled rarity yet, pickCharacter fell back
   // to the closest lower rarity that actually has characters. Make sure the
   // displayed rarity (label, colors, confetti, charge duration) matches the
   // character we're actually giving out — never show "Epic" for a character
   // that's really Uncommon.
-  pendingRarity = pendingCharacter.rarity;
+  rarity = character.rarity;
+  isPreviewMode = false;
+  beginOpeningSequence(character, rarity, pack);
+}
+
+// Used by the Code tab's rarity-preview tool: shows the exact same charging →
+// burst → reveal sequence as a real pack, for a specific rarity, using a
+// random real character of that rarity — but claiming afterward just closes
+// the overlay instead of adding anything to the collection.
+function previewRarity(rarity){
+  const pool = CHARACTERS.filter(c=>c.rarity===rarity);
+  if(!pool.length) return;
+  const character = pool[Math.floor(Math.random()*pool.length)];
+  const pack = PACKS.find(p=>p.id===character.packId) || PACKS[0];
+  isPreviewMode = true;
+  beginOpeningSequence(character, rarity, pack);
+}
+
+function beginOpeningSequence(character, rarity, pack){
+  document.querySelectorAll(".pack-open-btn, .pack-info-btn").forEach(b=>b.disabled = true);
+  resetOverlayVisuals();
+
+  openingPack.style.setProperty("--pack-color", pack.color);
+  openingPack.style.setProperty("--pack-color2", pack.color2);
+
+  overlay.classList.add("show");
+
+  pendingCharacter = character;
+  pendingRarity = rarity;
 
   // Get this exact image loading immediately, ahead of everything else —
   // there's still ~1-2+ seconds of charging/burst animation before the
@@ -2856,8 +2937,9 @@ function showReveal(rarity, remaining){
   Sound.fanfare(rarity);
   // Only flag this as "new" if the player doesn't already own it — inventory
   // isn't incremented until claim, so checking it here (pre-claim) tells us
-  // whether this pull is actually the first copy.
-  const isNewPull = !(inventory[pendingCharacter.id] > 0);
+  // whether this pull is actually the first copy. Skip entirely in preview
+  // mode since nothing is actually being added to the collection.
+  const isNewPull = !isPreviewMode && !(inventory[pendingCharacter.id] > 0);
   if(isNewPull){
     setRevealBanner(rarity);
   }
@@ -2865,6 +2947,7 @@ function showReveal(rarity, remaining){
   runRarityFlair(rarity, remaining);
 
   const tEnd = setTimeout(()=>{
+    claimBtn.textContent = isPreviewMode ? "Close" : "Claim";
     claimBtn.classList.add("show");
   }, Math.max(remaining-200, 300));
   extraTimers.push(tEnd);
@@ -3006,6 +3089,11 @@ claimBtn.addEventListener("click", claimCharacter);
 
 function claimCharacter(){
   if(!pendingCharacter) return;
+  if(isPreviewMode){
+    Sound.click();
+    closeOverlay();
+    return;
+  }
   Sound.claim();
   const id = pendingCharacter.id;
   const wasNew = !(inventory[id] > 0);
@@ -3029,6 +3117,7 @@ function closeOverlay(){
   document.querySelectorAll(".pack-open-btn, .pack-info-btn").forEach(b=>b.disabled = false);
   pendingCharacter = null;
   pendingRarity = null;
+  isPreviewMode = false;
 }
 
 /* ======================= CONFETTI ENGINE ======================= */
@@ -3100,6 +3189,63 @@ function confettiLoop(){
     confettiRunning = false;
     ctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
   }
+}
+
+/* ======================= CODE TAB ======================= */
+
+const VALID_CODES = ["ArvaPoosDeo222"];
+
+const codeGate = document.getElementById("codeGate");
+const codeTools = document.getElementById("codeTools");
+const codeInput = document.getElementById("codeInput");
+const codeError = document.getElementById("codeError");
+const codeSubmitBtn = document.getElementById("codeSubmitBtn");
+
+function unlockCodeTools(){
+  codeGate.style.display = "none";
+  codeTools.style.display = "block";
+  renderRarityPreviewGrid();
+}
+
+function trySubmitCode(){
+  const value = codeInput.value.trim();
+  if(VALID_CODES.includes(value)){
+    localStorage.setItem(LS_KEYS.codeUnlocked, "1");
+    Sound.claim();
+    unlockCodeTools();
+  } else {
+    codeError.textContent = "That code isn't valid.";
+    codeError.classList.add("show");
+    codeInput.value = "";
+    codeInput.focus();
+  }
+}
+
+codeSubmitBtn.addEventListener("click", trySubmitCode);
+codeInput.addEventListener("keydown", (e)=>{
+  if(e.key==="Enter") trySubmitCode();
+});
+
+function renderRarityPreviewGrid(){
+  const wrap = document.getElementById("rarityPreviewGrid");
+  wrap.innerHTML = RARITY_ORDER.map(key=>{
+    const r = RARITIES[key];
+    return `<button class="rarity-preview-btn" data-rarity="${key}" style="--pc:${r.color};--pc2:${r.color2}">
+      <span class="rp-dot"></span>
+      <span class="rp-label">${r.label}</span>
+    </button>`;
+  }).join("");
+  wrap.querySelectorAll(".rarity-preview-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      Sound.click();
+      previewRarity(btn.dataset.rarity);
+    });
+  });
+}
+
+// If a valid code was entered on a previous visit, skip straight to the tools.
+if(localStorage.getItem(LS_KEYS.codeUnlocked)==="1"){
+  unlockCodeTools();
 }
 
 /* ======================= INIT ======================= */
