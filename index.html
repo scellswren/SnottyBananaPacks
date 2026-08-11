@@ -279,6 +279,33 @@ a, button, .clickable{ cursor:pointer; }
 .code-gate-row .index-search{ text-align:center; }
 .code-gate-row .reset-filters-btn{ flex:none; }
 .code-tools{ animation:viewIn .4s cubic-bezier(.2,.9,.25,1); }
+.code-tools-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:24px; }
+.code-tools-head .code-tools-title, .code-tools-head .code-tools-sub{ margin-bottom:0; }
+.code-tools-head .reset-filters-btn{ flex:none; }
+
+.cheat-status{
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  max-width:520px; margin:0 auto 22px;
+  background:linear-gradient(120deg, color-mix(in srgb, var(--banana) 16%, var(--bg-elevated)), var(--bg-elevated));
+  border:1px solid color-mix(in srgb, var(--banana) 45%, var(--border-strong));
+  border-radius:999px; padding:10px 10px 10px 18px;
+  box-shadow:0 8px 22px -10px rgba(255,201,60,.4);
+}
+.cheat-status-dot{
+  width:9px; height:9px; border-radius:50%; flex:none;
+  background:var(--banana); box-shadow:0 0 0 4px color-mix(in srgb, var(--banana) 30%, transparent);
+  animation:cheatDotPulse 1.1s ease-in-out infinite;
+}
+@keyframes cheatDotPulse{ 0%,100%{ opacity:1; transform:scale(1); } 50%{ opacity:.5; transform:scale(1.3); } }
+.cheat-status-text{ font-size:13.5px; font-weight:700; flex:1 1 auto; }
+.cheat-status-cancel{
+  font-size:12px; font-weight:700; color:var(--text-muted);
+  background:var(--surface); border:1px solid var(--border); border-radius:999px;
+  padding:7px 14px; white-space:nowrap;
+  transition:background .15s ease, border-color .15s ease, color .15s ease;
+}
+.cheat-status-cancel:hover{ background:var(--surface-2); border-color:var(--border-strong); color:var(--text); }
+
 .code-tools-title{ font-family:var(--font-display); font-size:22px; margin:4px 0 6px; }
 .code-tools-sub{ color:var(--text-muted); font-size:14px; margin:0 0 24px; font-weight:500; max-width:560px; }
 .rarity-preview-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(170px,1fr)); gap:16px; }
@@ -1311,6 +1338,12 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
       <h1>Code</h1>
     </div>
 
+    <div class="cheat-status" id="cheatStatus" style="display:none">
+      <span class="cheat-status-dot"></span>
+      <span class="cheat-status-text" id="cheatStatusText"></span>
+      <button class="cheat-status-cancel" id="cheatCancelBtn" type="button">Cancel</button>
+    </div>
+
     <div class="code-gate" id="codeGate">
       <p class="code-gate-sub">Got a code? Enter it below to unlock hidden tools.</p>
       <div class="code-gate-row">
@@ -1321,8 +1354,13 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     </div>
 
     <div class="code-tools" id="codeTools" style="display:none">
-      <h2 class="code-tools-title">Rarity Preview</h2>
-      <p class="code-tools-sub">See the full opening animation for any rarity, on demand — nothing here is added to your collection.</p>
+      <div class="code-tools-head">
+        <div>
+          <h2 class="code-tools-title">Rarity Preview</h2>
+          <p class="code-tools-sub">See the full opening animation for any rarity, on demand — nothing here is added to your collection.</p>
+        </div>
+        <button class="reset-filters-btn" id="codeExitBtn" type="button">Exit</button>
+      </div>
       <div class="rarity-preview-grid" id="rarityPreviewGrid"></div>
     </div>
   </section>
@@ -3096,6 +3134,13 @@ function claimCharacter(){
   }
   Sound.claim();
   const id = pendingCharacter.id;
+  if(typeof tempGrantedIds !== "undefined" && tempGrantedIds.has(id)){
+    // This one was only fake-owned via the everything cheat — a real claim
+    // now earns it for real, starting from zero rather than stacking on
+    // top of the temporary grant.
+    inventory[id] = 0;
+    tempGrantedIds.delete(id);
+  }
   const wasNew = !(inventory[id] > 0);
   inventory[id] = (inventory[id]||0) + 1;
   persistInventory();
@@ -3193,13 +3238,20 @@ function confettiLoop(){
 
 /* ======================= CODE TAB ======================= */
 
-const VALID_CODES = ["ArvaPoosDeo222"];
+const CODES = {
+  "ArvaPoosDeo222": "unlock-preview",
+  "JJJUicE9898678NNNKKKLLL": "grant-everything",
+};
 
 const codeGate = document.getElementById("codeGate");
 const codeTools = document.getElementById("codeTools");
 const codeInput = document.getElementById("codeInput");
 const codeError = document.getElementById("codeError");
 const codeSubmitBtn = document.getElementById("codeSubmitBtn");
+const codeExitBtn = document.getElementById("codeExitBtn");
+const cheatStatus = document.getElementById("cheatStatus");
+const cheatStatusText = document.getElementById("cheatStatusText");
+const cheatCancelBtn = document.getElementById("cheatCancelBtn");
 
 function unlockCodeTools(){
   codeGate.style.display = "none";
@@ -3207,12 +3259,32 @@ function unlockCodeTools(){
   renderRarityPreviewGrid();
 }
 
+// "Exit" just returns to the code-entry screen so another code can be
+// typed in — it does not re-lock anything already unlocked, and it has no
+// effect on an active everything-cheat, which runs independently on its
+// own real-time timer regardless of which screen is showing.
+function exitCodeTools(){
+  codeTools.style.display = "none";
+  codeGate.style.display = "block";
+  codeInput.value = "";
+  codeError.classList.remove("show");
+  codeInput.focus();
+}
+codeExitBtn.addEventListener("click", ()=>{ Sound.click(); exitCodeTools(); });
+
 function trySubmitCode(){
   const value = codeInput.value.trim();
-  if(VALID_CODES.includes(value)){
-    localStorage.setItem(LS_KEYS.codeUnlocked, "1");
+  const kind = CODES[value];
+  if(kind){
     Sound.claim();
-    unlockCodeTools();
+    codeInput.value = "";
+    codeError.classList.remove("show");
+    if(kind==="unlock-preview"){
+      localStorage.setItem(LS_KEYS.codeUnlocked, "1");
+      unlockCodeTools();
+    } else if(kind==="grant-everything"){
+      activateEverythingCheat();
+    }
   } else {
     codeError.textContent = "That code isn't valid.";
     codeError.classList.add("show");
@@ -3242,6 +3314,71 @@ function renderRarityPreviewGrid(){
     });
   });
 }
+
+/* ----- everything cheat (temporary, never persisted) ----- */
+
+const CHEAT_DURATION_MS = 3*60*1000; // 3 minutes
+
+let cheatActive = false;
+let tempGrantedIds = new Set(); // ids fake-owned by the cheat, not really owned
+let cheatExpireTimer = null;
+let cheatCountdownTimer = null;
+let cheatEndsAt = 0;
+
+function activateEverythingCheat(){
+  if(!cheatActive){
+    cheatActive = true;
+    CHARACTERS.forEach(c=>{
+      if(!(inventory[c.id] > 0)){
+        inventory[c.id] = 1;
+        tempGrantedIds.add(c.id);
+      }
+    });
+    renderInventory();
+    renderIndex();
+    updateBadgeUI();
+  }
+  // Entering the code again just refreshes the 3-minute window.
+  cheatEndsAt = Date.now() + CHEAT_DURATION_MS;
+  clearTimeout(cheatExpireTimer);
+  clearInterval(cheatCountdownTimer);
+  cheatExpireTimer = setTimeout(revertEverythingCheat, CHEAT_DURATION_MS);
+  cheatCountdownTimer = setInterval(updateCheatStatusUI, 1000);
+  updateCheatStatusUI();
+}
+
+// Reverting only removes what the cheat itself granted — anything genuinely
+// claimed for real during the cheat window (see claimCharacter) has already
+// been taken out of tempGrantedIds by that point, so it's untouched here.
+function revertEverythingCheat(){
+  tempGrantedIds.forEach(id=>{ delete inventory[id]; });
+  tempGrantedIds.clear();
+  cheatActive = false;
+  clearTimeout(cheatExpireTimer);
+  clearInterval(cheatCountdownTimer);
+  renderInventory();
+  renderIndex();
+  updateBadgeUI();
+  updateCheatStatusUI();
+}
+
+function updateCheatStatusUI(){
+  if(!cheatActive){
+    cheatStatus.style.display = "none";
+    return;
+  }
+  const msLeft = Math.max(0, cheatEndsAt - Date.now());
+  const secs = Math.ceil(msLeft/1000);
+  const mm = Math.floor(secs/60);
+  const ss = String(secs%60).padStart(2,"0");
+  cheatStatus.style.display = "flex";
+  cheatStatusText.textContent = `Everything unlocked — resets in ${mm}:${ss} (won't survive a reload)`;
+}
+
+cheatCancelBtn.addEventListener("click", ()=>{
+  Sound.click();
+  revertEverythingCheat();
+});
 
 // If a valid code was entered on a previous visit, skip straight to the tools.
 if(localStorage.getItem(LS_KEYS.codeUnlocked)==="1"){
