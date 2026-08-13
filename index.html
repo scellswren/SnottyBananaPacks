@@ -432,10 +432,100 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .section-head h1{ font-family:var(--font-display); font-size:28px; margin:0; letter-spacing:.2px; }
 
 /* ============================= HOME / PACK ============================= */
-.home-stage{
-  display:flex; flex-direction:column; align-items:center; gap:34px;
-  padding:50px 20px 30px;
+.home-progress{
+  max-width:420px; margin:0 auto 8px;
+  background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-md);
+  padding:18px 22px; box-shadow:var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05);
 }
+.home-progress-top{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:10px; }
+.home-progress-label{ font-weight:800; font-size:12.5px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); }
+.home-progress-pct{
+  font-family:var(--font-display); font-weight:800; font-size:20px;
+  background:linear-gradient(120deg, var(--banana), var(--pink));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+}
+.home-progress-bar{ height:10px; border-radius:999px; background:var(--surface-2); overflow:hidden; }
+.home-progress-fill{
+  height:100%; border-radius:999px; width:0%;
+  background:linear-gradient(90deg, var(--violet), var(--pink), var(--banana));
+  transition:width .7s cubic-bezier(.2,.9,.25,1);
+}
+.home-progress-sub{ margin-top:9px; font-size:12px; color:var(--text-muted); font-weight:600; text-align:center; }
+
+.home-stage{
+  display:flex; flex-direction:column; align-items:center; gap:28px;
+  padding:34px 20px 30px;
+}
+
+/* ----- pack switcher (opens the chooser mini-menu) ----- */
+.pack-switcher-btn{
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface); border:1px solid var(--border-strong); border-radius:999px;
+  padding:8px 22px 8px 8px;
+  box-shadow:var(--shadow-md), inset 0 1px 0 rgba(255,255,255,.05);
+  transition:transform .2s cubic-bezier(.3,1.4,.6,1), box-shadow .2s ease, border-color .2s ease;
+}
+.pack-switcher-btn:hover{ transform:translateY(-2px); box-shadow:var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,.05); border-color:var(--violet); }
+.pack-switcher-btn:active{ transform:translateY(0) scale(.98); }
+.pack-switcher-thumb{
+  width:44px; height:44px; border-radius:50%; overflow:hidden; flex:none;
+  background:var(--surface-2); display:flex; align-items:center; justify-content:center;
+  border:2px solid var(--border-strong);
+}
+.pack-switcher-thumb img{ width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .18s ease; }
+.pack-switcher-thumb .fallback{
+  font-size:15px; font-weight:800; font-family:var(--font-display); color:#241a00;
+  display:none; align-items:center; justify-content:center; width:100%; height:100%;
+}
+.pack-switcher-thumb.show-fallback img{ display:none; }
+.pack-switcher-thumb.show-fallback .fallback{ display:flex; }
+.pack-switcher-text{ display:flex; flex-direction:column; gap:1px; text-align:left; }
+.pack-switcher-label{ font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--text-muted); }
+.pack-switcher-name{ font-family:var(--font-display); font-weight:800; font-size:16px; }
+.pack-switcher-arrow{ font-size:16px; color:var(--text-muted); margin-left:2px; }
+
+/* ----- pack chooser mini-menu (modal) ----- */
+.pack-chooser-card{ max-width:420px; text-align:left; }
+.pack-chooser-card h2{ text-align:center; margin:6px 0 20px; }
+.pack-chooser-list{ display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; padding-right:2px; }
+.pack-chooser-row{
+  display:flex; align-items:center; gap:14px; width:100%; text-align:left;
+  background:var(--surface); border:1px solid var(--border);
+  border-left:4px solid var(--pc, var(--border));
+  border-radius:16px; padding:10px 16px 10px 12px;
+  transition:transform .18s cubic-bezier(.3,1.4,.6,1), background .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.pack-chooser-row:hover{
+  transform:translateX(4px); background:var(--surface-2);
+  box-shadow:0 8px 20px -8px color-mix(in srgb, var(--pc, rgba(0,0,0,.3)) 50%, transparent);
+}
+.pack-chooser-row.selected{
+  border-color:var(--pc, var(--violet));
+  background:color-mix(in srgb, var(--pc, var(--surface-2)) 14%, var(--surface-2));
+}
+.pack-chooser-thumb{
+  width:52px; height:52px; border-radius:50%; overflow:hidden; flex:none;
+  background:var(--surface-2); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--pc, transparent) 30%, transparent);
+}
+.pack-chooser-thumb img{ width:100%; height:100%; object-fit:cover; opacity:0; transition:opacity .18s ease; }
+.pack-chooser-thumb .fallback{
+  font-size:16px; font-weight:800; font-family:var(--font-display); color:#241a00;
+  display:none; align-items:center; justify-content:center; width:100%; height:100%;
+}
+.pack-chooser-thumb.show-fallback img{ display:none; }
+.pack-chooser-thumb.show-fallback .fallback{ display:flex; }
+.pack-chooser-info{ flex:1 1 auto; min-width:0; }
+.pack-chooser-name{ font-weight:800; font-size:15px; margin-bottom:2px; }
+.pack-chooser-count{ font-size:12px; color:var(--text-muted); font-weight:600; }
+.pack-chooser-check{
+  width:26px; height:26px; border-radius:50%; flex:none;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--pc, var(--violet)); color:#fff; font-size:13px; font-weight:800;
+  opacity:0; transform:scale(.6); transition:opacity .18s ease, transform .18s ease;
+}
+.pack-chooser-row.selected .pack-chooser-check{ opacity:1; transform:scale(1); }
+
 .pack-picker{ display:flex; gap:26px; flex-wrap:wrap; justify-content:center; }
 @keyframes sheen{ 0%,60%{ transform:translateX(-140%); } 100%{ transform:translateX(140%); } }
 
@@ -537,6 +627,7 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 /* ============================= CARDS GRID (Inventory / Index) ============================= */
 .toolbar{ display:flex; flex-direction:column; gap:14px; margin-bottom:26px; }
 .toolbar-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between; }
+.toolbar-group{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .pill-row{ display:flex; gap:10px; flex-wrap:wrap; }
 
 .dropdown{ position:relative; }
@@ -1264,14 +1355,26 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     <div class="section-head">
       <h1>Packs</h1>
     </div>
-    <div class="home-stage">
-      <div class="dropdown" id="homePackDropdown">
-        <button class="dropdown-trigger" id="homePackDropdownTrigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-          <span id="homePackDropdownLabel">Orin Pack</span>
-          <span class="dropdown-arrow">▾</span>
-        </button>
-        <div class="dropdown-panel" id="homePackDropdownPanel" role="listbox"></div>
+    <div class="home-progress" id="homeProgress">
+      <div class="home-progress-top">
+        <span class="home-progress-label">Overall collection</span>
+        <span class="home-progress-pct" id="homeProgressPct">0%</span>
       </div>
+      <div class="home-progress-bar"><div class="home-progress-fill" id="homeProgressFill"></div></div>
+      <div class="home-progress-sub" id="homeProgressSub">0 / 0 characters collected</div>
+    </div>
+    <div class="home-stage">
+      <button class="pack-switcher-btn" id="packSwitcherBtn" type="button">
+        <span class="pack-switcher-thumb" id="packSwitcherThumb">
+          <img alt="" decoding="async">
+          <div class="fallback"></div>
+        </span>
+        <span class="pack-switcher-text">
+          <span class="pack-switcher-label">Currently viewing</span>
+          <span class="pack-switcher-name" id="packSwitcherName">Orin Pack</span>
+        </span>
+        <span class="pack-switcher-arrow">⇄</span>
+      </button>
       <div class="pack-picker" id="packPicker"></div>
     </div>
   </section>
@@ -1283,8 +1386,11 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
     </div>
     <div class="toolbar">
       <div class="toolbar-row">
-        <span class="inv-sort-label">Sort each pack by</span>
-        <div class="sort-seg" id="invSortSeg"></div>
+        <div class="toolbar-group">
+          <span class="inv-sort-label">Sort each pack by</span>
+          <div class="sort-seg" id="invSortSeg"></div>
+        </div>
+        <button class="reset-filters-btn" id="exportCollectionBtn" type="button">⬇ Export collection</button>
       </div>
     </div>
     <div id="inventoryGrid" class="inventory-groups"></div>
@@ -1393,6 +1499,15 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
       <div class="sort-seg" id="packInfoSortSeg"></div>
     </div>
     <div class="pack-info-grid" id="packInfoGrid"></div>
+  </div>
+</div>
+
+<!-- Pack chooser mini-menu (Home) -->
+<div class="modal-backdrop" id="packChooserModal">
+  <div class="preview-card pack-chooser-card">
+    <button class="close-x" id="packChooserClose">✕</button>
+    <h2>Choose a Pack</h2>
+    <div class="pack-chooser-list" id="packChooserList"></div>
   </div>
 </div>
 
@@ -1986,6 +2101,31 @@ let theme     = localStorage.getItem(LS_KEYS.theme) || "dark";
 function persistInventory(){ saveJSON(LS_KEYS.inventory, inventory); }
 function persistNewIds(){ saveJSON(LS_KEYS.newIds, newIds); }
 
+/* ======================= EXPORT COLLECTION ======================= */
+
+function exportCollection(){
+  const payload = {
+    app:"Snotty Banana Packs",
+    exportedAt:new Date().toISOString(),
+    inventory,
+    newIds,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const stamp = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `snotty-banana-packs-collection-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+document.getElementById("exportCollectionBtn").addEventListener("click", ()=>{
+  Sound.click();
+  exportCollection();
+});
+
 /* ======================= THEME ======================= */
 
 function applyTheme(t){
@@ -2198,56 +2338,92 @@ function renderPackPicker(){
 }
 renderPackPicker();
 
-/* ----- home pack dropdown (choose which pack is shown) ----- */
+/* ----- overall collection progress (Home) ----- */
 
-const homePackDropdown        = document.getElementById("homePackDropdown");
-const homePackDropdownTrigger = document.getElementById("homePackDropdownTrigger");
-const homePackDropdownLabel   = document.getElementById("homePackDropdownLabel");
-const homePackDropdownPanel   = document.getElementById("homePackDropdownPanel");
+function renderHomeProgress(){
+  const total = CHARACTERS.length;
+  const owned = CHARACTERS.filter(c=>(inventory[c.id]||0)>0).length;
+  const pct = total ? Math.round((owned/total)*100) : 0;
+  document.getElementById("homeProgressPct").textContent = `${pct}%`;
+  document.getElementById("homeProgressFill").style.width = `${pct}%`;
+  document.getElementById("homeProgressSub").textContent = `${owned} / ${total} characters collected`;
+}
+renderHomeProgress();
 
-function renderHomePackDropdown(){
-  const current = PACKS.find(p=>p.id===currentHomePack) || PACKS[0];
-  homePackDropdownLabel.textContent = current.name;
+/* ----- pack switcher button + chooser mini-menu (choose which pack is shown) ----- */
 
-  homePackDropdownPanel.innerHTML = PACKS.map(p=>{
-    const active = currentHomePack===p.id;
-    return `<button class="dropdown-option${active?" active":""}" data-value="${p.id}" role="option" aria-selected="${active}">${p.name}<span class="check">✓</span></button>`;
+function packShowcaseChar(packId){
+  // Character #001 of the pack — falls back to whatever exists first, just
+  // in case a pack's num:1 slot ever gets skipped.
+  return CHARACTERS.find(c=>c.packId===packId && c.num===1) || CHARACTERS.find(c=>c.packId===packId) || null;
+}
+
+function renderPackSwitcherBtn(){
+  const p = PACKS.find(pk=>pk.id===currentHomePack) || PACKS[0];
+  document.getElementById("packSwitcherName").textContent = p.name;
+  const showcase = packShowcaseChar(p.id);
+  const thumb = document.getElementById("packSwitcherThumb");
+  if(showcase) wireVisual(thumb, showcase);
+}
+renderPackSwitcherBtn();
+
+function renderPackChooserList(){
+  const wrap = document.getElementById("packChooserList");
+  wrap.innerHTML = PACKS.map(p=>{
+    const selected = p.id===currentHomePack;
+    const count = CHARACTERS.filter(c=>c.packId===p.id).length;
+    return `<button class="pack-chooser-row${selected?" selected":""}" data-pack-id="${p.id}" style="--pc:${p.color}">
+      <span class="pack-chooser-thumb" data-chooser-thumb="${p.id}">
+        <img alt="" decoding="async">
+        <div class="fallback"></div>
+      </span>
+      <span class="pack-chooser-info">
+        <span class="pack-chooser-name">${p.name}</span>
+        <span class="pack-chooser-count">${count} character${count===1?"":"s"}</span>
+      </span>
+      <span class="pack-chooser-check">✓</span>
+    </button>`;
   }).join("");
 
-  homePackDropdownPanel.querySelectorAll(".dropdown-option").forEach(btn=>{
+  PACKS.forEach(p=>{
+    const showcase = packShowcaseChar(p.id);
+    const thumb = wrap.querySelector(`[data-chooser-thumb="${p.id}"]`);
+    if(showcase && thumb) wireVisual(thumb, showcase);
+  });
+
+  wrap.querySelectorAll(".pack-chooser-row").forEach(btn=>{
     btn.addEventListener("click", ()=>{
-      if(btn.dataset.value!==currentHomePack){
-        currentHomePack = btn.dataset.value;
+      const id = btn.dataset.packId;
+      if(id!==currentHomePack){
+        currentHomePack = id;
         Sound.pillSelect();
-        renderHomePackDropdown();
         renderPackPicker();
+        renderPackSwitcherBtn();
       }
-      closeHomePackDropdown();
+      Sound.click();
+      closePackChooser();
     });
   });
 }
-function openHomePackDropdown(){
-  homePackDropdownTrigger.classList.add("open");
-  homePackDropdownTrigger.setAttribute("aria-expanded","true");
-  homePackDropdownPanel.classList.add("show");
+
+function openPackChooser(){
+  renderPackChooserList();
+  document.getElementById("packChooserModal").classList.add("show");
 }
-function closeHomePackDropdown(){
-  homePackDropdownTrigger.classList.remove("open");
-  homePackDropdownTrigger.setAttribute("aria-expanded","false");
-  homePackDropdownPanel.classList.remove("show");
+function closePackChooser(){
+  document.getElementById("packChooserModal").classList.remove("show");
 }
-homePackDropdownTrigger.addEventListener("click", (e)=>{
-  e.stopPropagation();
+document.getElementById("packSwitcherBtn").addEventListener("click", ()=>{
   Sound.click();
-  if(homePackDropdownPanel.classList.contains("show")) closeHomePackDropdown(); else openHomePackDropdown();
+  openPackChooser();
 });
-document.addEventListener("click", (e)=>{
-  if(!homePackDropdown.contains(e.target)) closeHomePackDropdown();
+document.getElementById("packChooserClose").addEventListener("click", closePackChooser);
+document.getElementById("packChooserModal").addEventListener("click", (e)=>{
+  if(e.target.id==="packChooserModal") closePackChooser();
 });
 document.addEventListener("keydown", (e)=>{
-  if(e.key==="Escape") closeHomePackDropdown();
+  if(e.key==="Escape") closePackChooser();
 });
-renderHomePackDropdown();
 
 /* ======================= ODDS LIST (Inventory / Index) ======================= */
 
@@ -2300,6 +2476,7 @@ function sortCharList(list){
 
 function renderInventory(){
   renderInvSortSeg();
+  if(typeof renderHomeProgress === "function") renderHomeProgress();
   const grid = document.getElementById("inventoryGrid");
   const ownedIds = Object.keys(inventory).filter(id=>inventory[id]>0);
 
