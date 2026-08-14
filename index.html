@@ -675,6 +675,10 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 }
 .auto-claim-row:hover{ opacity:1; }
 .auto-claim-row .sort-seg{ transform:scale(.9); }
+.auto-claim-hint{
+  font-size:11.5px; font-weight:600; color:var(--text-muted); text-align:center;
+  max-width:280px; letter-spacing:.1px; opacity:.7;
+}
 
 .index-progress{
   margin-left:auto; font-family:var(--font-body); font-weight:700; font-size:13.5px;
@@ -1377,17 +1381,22 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
       </button>
       <div class="pack-picker" id="packPicker"></div>
     </div>
-    <div class="auto-claim-row" id="autoClaimRow" style="display:none">
-      <div class="sort-seg" id="autoClaimToggleSeg">
-        <button class="sort-seg-btn active" type="button" data-on="0">Off</button>
-        <button class="sort-seg-btn" type="button" data-on="1">Auto-claim</button>
-      </div>
-      <div class="sort-seg" id="autoClaimDelaySeg" style="display:none">
-        <button class="sort-seg-btn" type="button" data-delay="1000">1s</button>
-        <button class="sort-seg-btn active" type="button" data-delay="2000">2s</button>
-        <button class="sort-seg-btn" type="button" data-delay="5000">5s</button>
-        <button class="sort-seg-btn" type="button" data-delay="10000">10s</button>
-        <button class="sort-seg-btn" type="button" data-delay="20000">20s</button>
+    <div class="auto-claim-row" id="autoClaimRow">
+      <div class="auto-claim-hint" id="autoClaimHint">Collect 2 Mythic characters to unlock something new here.</div>
+      <div class="auto-claim-controls" id="autoClaimControls" style="display:none">
+        <div class="sort-seg" id="autoClaimToggleSeg">
+          <button class="sort-seg-btn active" type="button" data-on="0">Off</button>
+          <button class="sort-seg-btn" type="button" data-on="1">Auto-claim</button>
+        </div>
+        <div class="sort-seg" id="autoClaimDelaySeg" style="display:none">
+          <button class="sort-seg-btn" type="button" data-delay="0">0s</button>
+          <button class="sort-seg-btn" type="button" data-delay="500">0.5s</button>
+          <button class="sort-seg-btn" type="button" data-delay="1000">1s</button>
+          <button class="sort-seg-btn active" type="button" data-delay="2000">2s</button>
+          <button class="sort-seg-btn" type="button" data-delay="5000">5s</button>
+          <button class="sort-seg-btn" type="button" data-delay="10000">10s</button>
+          <button class="sort-seg-btn" type="button" data-delay="20000">20s</button>
+        </div>
       </div>
     </div>
   </section>
@@ -2132,10 +2141,16 @@ let theme     = localStorage.getItem(LS_KEYS.theme) || "dark";
 
 // Auto-claim: a quiet, permanent unlock (via code or by owning 2+ mythics)
 // that lets pulls claim themselves after a chosen delay instead of waiting
-// for a tap. Once unlocked it stays unlocked for the browser going forward.
+// for a tap, then immediately reopens the same pack to keep going. Once
+// unlocked it stays unlocked for the browser going forward.
 let autoClaimUnlocked = localStorage.getItem(LS_KEYS.autoClaimUnlocked) === "1";
 let autoClaimOn       = localStorage.getItem(LS_KEYS.autoClaimOn) === "1";
-let autoClaimDelayMs  = parseInt(localStorage.getItem(LS_KEYS.autoClaimDelay), 10) || 2000;
+let autoClaimDelayMs  = 2000;
+{
+  const storedDelay = localStorage.getItem(LS_KEYS.autoClaimDelay);
+  const parsedDelay = storedDelay===null ? NaN : parseInt(storedDelay, 10);
+  if(!Number.isNaN(parsedDelay)) autoClaimDelayMs = parsedDelay;
+}
 
 function persistInventory(){ saveJSON(LS_KEYS.inventory, inventory); }
 function persistNewIds(){ saveJSON(LS_KEYS.newIds, newIds); }
@@ -2143,11 +2158,16 @@ function persistNewIds(){ saveJSON(LS_KEYS.newIds, newIds); }
 /* ======================= AUTO-CLAIM ======================= */
 
 const autoClaimRow      = document.getElementById("autoClaimRow");
+const autoClaimHint     = document.getElementById("autoClaimHint");
+const autoClaimControls = document.getElementById("autoClaimControls");
 const autoClaimToggleSeg= document.getElementById("autoClaimToggleSeg");
 const autoClaimDelaySeg = document.getElementById("autoClaimDelaySeg");
 
+let autoReopenTimer = null;
+
 function updateAutoClaimUI(){
-  autoClaimRow.style.display = autoClaimUnlocked ? "flex" : "none";
+  autoClaimHint.style.display = autoClaimUnlocked ? "none" : "block";
+  autoClaimControls.style.display = autoClaimUnlocked ? "flex" : "none";
   if(!autoClaimUnlocked) return;
   autoClaimToggleSeg.querySelectorAll(".sort-seg-btn").forEach(btn=>{
     btn.classList.toggle("active", (btn.dataset.on==="1") === autoClaimOn);
@@ -2180,6 +2200,16 @@ autoClaimToggleSeg.querySelectorAll(".sort-seg-btn").forEach(btn=>{
     autoClaimOn = btn.dataset.on === "1";
     localStorage.setItem(LS_KEYS.autoClaimOn, autoClaimOn ? "1" : "0");
     updateAutoClaimUI();
+    if(autoClaimOn){
+      // Nothing already mid-open? Kick the loop off right away instead of
+      // waiting for a manual first pack.
+      if(!pendingCharacter && !overlay.classList.contains("show")){
+        startPackOpening(currentHomePack);
+      }
+    } else {
+      clearTimeout(autoReopenTimer);
+      autoReopenTimer = null;
+    }
   });
 });
 autoClaimDelaySeg.querySelectorAll(".sort-seg-btn").forEach(btn=>{
@@ -3402,6 +3432,7 @@ function claimCharacter(){
   }
   Sound.claim();
   const id = pendingCharacter.id;
+  const packIdJustOpened = pendingCharacter.packId;
   if(typeof tempGrantedIds !== "undefined" && tempGrantedIds.has(id)){
     // This one was only fake-owned via the everything cheat — a real claim
     // now earns it for real, starting from zero rather than stacking on
@@ -3422,6 +3453,17 @@ function claimCharacter(){
   renderInventory();
   renderIndex();
   checkAutoClaimUnlock();
+
+  // Keep the loop going — reopen the same pack shortly after this claim,
+  // as long as auto-claim is still switched on.
+  if(autoClaimUnlocked && autoClaimOn){
+    clearTimeout(autoReopenTimer);
+    autoReopenTimer = setTimeout(()=>{
+      if(autoClaimUnlocked && autoClaimOn && !pendingCharacter){
+        startPackOpening(packIdJustOpened);
+      }
+    }, 450);
+  }
 }
 
 function closeOverlay(){
