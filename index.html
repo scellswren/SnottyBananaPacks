@@ -669,6 +669,13 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
 .sort-seg-btn.active{ background:linear-gradient(120deg, var(--violet), var(--violet-deep)); color:#fff; box-shadow:0 8px 18px rgba(109,40,217,.32); animation:tabPop .35s cubic-bezier(.3,1.6,.5,1); }
 .sort-seg-btn:active{ transform:scale(.94); }
 
+.auto-claim-row{
+  margin:16px auto 0; display:flex; flex-direction:column; align-items:center; gap:7px;
+  opacity:.8; transition:opacity .2s ease;
+}
+.auto-claim-row:hover{ opacity:1; }
+.auto-claim-row .sort-seg{ transform:scale(.9); }
+
 .index-progress{
   margin-left:auto; font-family:var(--font-body); font-weight:700; font-size:13.5px;
   color:var(--text-muted); background:var(--surface); border:1px solid var(--border);
@@ -1370,6 +1377,19 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
       </button>
       <div class="pack-picker" id="packPicker"></div>
     </div>
+    <div class="auto-claim-row" id="autoClaimRow" style="display:none">
+      <div class="sort-seg" id="autoClaimToggleSeg">
+        <button class="sort-seg-btn active" type="button" data-on="0">Off</button>
+        <button class="sort-seg-btn" type="button" data-on="1">Auto-claim</button>
+      </div>
+      <div class="sort-seg" id="autoClaimDelaySeg" style="display:none">
+        <button class="sort-seg-btn" type="button" data-delay="1000">1s</button>
+        <button class="sort-seg-btn active" type="button" data-delay="2000">2s</button>
+        <button class="sort-seg-btn" type="button" data-delay="5000">5s</button>
+        <button class="sort-seg-btn" type="button" data-delay="10000">10s</button>
+        <button class="sort-seg-btn" type="button" data-delay="20000">20s</button>
+      </div>
+    </div>
   </section>
 
   <!-- INVENTORY -->
@@ -1383,7 +1403,6 @@ main{ max-width:1180px; margin:0 auto; padding:34px 22px 90px; }
           <span class="inv-sort-label">Sort each pack by</span>
           <div class="sort-seg" id="invSortSeg"></div>
         </div>
-        <button class="reset-filters-btn" id="exportCollectionBtn" type="button">⬇ Export collection</button>
       </div>
     </div>
     <div id="inventoryGrid" class="inventory-groups"></div>
@@ -2093,6 +2112,7 @@ const LS_KEYS = {
   indexPackFilter:"sbp_index_pack_filter", indexRarityFilter:"sbp_index_rarity_filter",
   indexSort:"sbp_index_sort", indexOwnership:"sbp_index_ownership", indexSearch:"sbp_index_search",
   inventorySort:"sbp_inventory_sort", packInfoSort:"sbp_pack_info_sort", codeUnlocked:"sbp_code_unlocked",
+  autoClaimUnlocked:"sbp_autoclaim_unlocked", autoClaimOn:"sbp_autoclaim_on", autoClaimDelay:"sbp_autoclaim_delay",
 };
 
 function loadJSON(key, fallback){
@@ -2110,32 +2130,65 @@ let inventory = loadJSON(LS_KEYS.inventory, {});   // { charId: qty }
 let newIds    = loadJSON(LS_KEYS.newIds, []);       // [charId, ...] unseen-in-inventory
 let theme     = localStorage.getItem(LS_KEYS.theme) || "dark";
 
+// Auto-claim: a quiet, permanent unlock (via code or by owning 2+ mythics)
+// that lets pulls claim themselves after a chosen delay instead of waiting
+// for a tap. Once unlocked it stays unlocked for the browser going forward.
+let autoClaimUnlocked = localStorage.getItem(LS_KEYS.autoClaimUnlocked) === "1";
+let autoClaimOn       = localStorage.getItem(LS_KEYS.autoClaimOn) === "1";
+let autoClaimDelayMs  = parseInt(localStorage.getItem(LS_KEYS.autoClaimDelay), 10) || 2000;
+
 function persistInventory(){ saveJSON(LS_KEYS.inventory, inventory); }
 function persistNewIds(){ saveJSON(LS_KEYS.newIds, newIds); }
 
-/* ======================= EXPORT COLLECTION ======================= */
+/* ======================= AUTO-CLAIM ======================= */
 
-function exportCollection(){
-  const payload = {
-    app:"Snotty Banana Packs",
-    exportedAt:new Date().toISOString(),
-    inventory,
-    newIds,
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const stamp = new Date().toISOString().slice(0,10);
-  a.href = url;
-  a.download = `snotty-banana-packs-collection-${stamp}.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+const autoClaimRow      = document.getElementById("autoClaimRow");
+const autoClaimToggleSeg= document.getElementById("autoClaimToggleSeg");
+const autoClaimDelaySeg = document.getElementById("autoClaimDelaySeg");
+
+function updateAutoClaimUI(){
+  autoClaimRow.style.display = autoClaimUnlocked ? "flex" : "none";
+  if(!autoClaimUnlocked) return;
+  autoClaimToggleSeg.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+    btn.classList.toggle("active", (btn.dataset.on==="1") === autoClaimOn);
+  });
+  autoClaimDelaySeg.style.display = autoClaimOn ? "flex" : "none";
+  autoClaimDelaySeg.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+    btn.classList.toggle("active", parseInt(btn.dataset.delay,10) === autoClaimDelayMs);
+  });
 }
-document.getElementById("exportCollectionBtn").addEventListener("click", ()=>{
-  Sound.click();
-  exportCollection();
+
+function unlockAutoClaim(){
+  if(autoClaimUnlocked) return;
+  autoClaimUnlocked = true;
+  localStorage.setItem(LS_KEYS.autoClaimUnlocked, "1");
+  updateAutoClaimUI();
+}
+
+// Quiet achievement unlock — owning 2 distinct mythic characters reveals the
+// same permanent auto-claim control as the code does. Checked after every
+// claim and once on load, in case the player already had them.
+function checkAutoClaimUnlock(){
+  if(autoClaimUnlocked) return;
+  const mythicsOwned = CHARACTERS.filter(c=>c.rarity==="mythic" && inventory[c.id] > 0).length;
+  if(mythicsOwned >= 2) unlockAutoClaim();
+}
+
+autoClaimToggleSeg.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    Sound.click();
+    autoClaimOn = btn.dataset.on === "1";
+    localStorage.setItem(LS_KEYS.autoClaimOn, autoClaimOn ? "1" : "0");
+    updateAutoClaimUI();
+  });
+});
+autoClaimDelaySeg.querySelectorAll(".sort-seg-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    Sound.click();
+    autoClaimDelayMs = parseInt(btn.dataset.delay, 10);
+    localStorage.setItem(LS_KEYS.autoClaimDelay, String(autoClaimDelayMs));
+    updateAutoClaimUI();
+  });
 });
 
 /* ======================= THEME ======================= */
@@ -3198,6 +3251,10 @@ function showReveal(rarity, remaining){
   const tEnd = setTimeout(()=>{
     claimBtn.textContent = isPreviewMode ? "Close" : "Claim";
     claimBtn.classList.add("show");
+    if(!isPreviewMode && autoClaimUnlocked && autoClaimOn){
+      const tAuto = setTimeout(claimCharacter, autoClaimDelayMs);
+      extraTimers.push(tAuto);
+    }
   }, Math.max(remaining-200, 300));
   extraTimers.push(tEnd);
 }
@@ -3364,6 +3421,7 @@ function claimCharacter(){
   closeOverlay();
   renderInventory();
   renderIndex();
+  checkAutoClaimUnlock();
 }
 
 function closeOverlay(){
@@ -3452,6 +3510,7 @@ function confettiLoop(){
 const CODES = {
   "ArvaPoosDeo222": "unlock-preview",
   "JJJUicE9898678NNNKKKLLL": "grant-everything",
+  "FishFingerPiss9900": "unlock-autoclaim",
 };
 
 const codeGate = document.getElementById("codeGate");
@@ -3495,6 +3554,8 @@ function trySubmitCode(){
       unlockCodeTools();
     } else if(kind==="grant-everything"){
       activateEverythingCheat();
+    } else if(kind==="unlock-autoclaim"){
+      unlockAutoClaim();
     }
   } else {
     codeError.textContent = "That code isn't valid.";
@@ -3600,6 +3661,8 @@ if(localStorage.getItem(LS_KEYS.codeUnlocked)==="1"){
 
 renderInventory();
 renderIndex();
+updateAutoClaimUI();
+checkAutoClaimUnlock();
 
 })();
 </script>
